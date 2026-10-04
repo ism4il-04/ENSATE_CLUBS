@@ -3,7 +3,6 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
-  customType,
   integer,
   numeric,
   pgEnum,
@@ -18,7 +17,6 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
-const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 const ts = (name: string) => timestamp(name, { withTimezone: true });
 
 // ---------------------------------------------------------------- enums
@@ -219,7 +217,7 @@ export const media = pgTable("media", {
 
 export const sessionStand = pgTable("session_stand", {
   id: uuid("id_session").primaryKey().defaultRandom(),
-  secret: bytea("secret").notNull(), // jamais renvoyé au client
+  secret: text("secret").notNull(), // 32 octets aléatoires (base64url), jamais renvoyé au client
   dateOuverture: ts("date_ouverture").notNull().defaultNow(),
   dateExpiration: ts("date_expiration").notNull(),
   actif: boolean("actif").notNull().default(true),

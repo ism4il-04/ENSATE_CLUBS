@@ -305,7 +305,7 @@ CHECK (source <> 'MEMBRE' OR (statut IN ('CONFIRMEE','ANNULEE') AND date_paiemen
 | Colonne | Type | Contraintes |
 | --- | --- | --- |
 | id_session | uuid | PK |
-| secret | bytea | NOT NULL (32 octets) ; **jamais renvoyé au client** |
+| secret | text | NOT NULL (32 octets aléatoires en base64url) ; **jamais renvoyé au client** |
 | date_ouverture | timestamptz | NOT NULL |
 | date_expiration | timestamptz | NOT NULL (par défaut, ouverture + 8 h) |
 | actif | boolean | NOT NULL |
