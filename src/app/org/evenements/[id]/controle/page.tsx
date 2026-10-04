@@ -4,7 +4,7 @@ import { ControleScreen } from "@/components/org/ControleScreen";
 import { EventHeader } from "@/components/org/EventHeader";
 import { dayLabel, timeLabel } from "@/lib/format";
 import { utcToZoned } from "@/lib/dates";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { AccessError, peut, requireOrgPage } from "@/server/permissions";
 import { getManagedEvent } from "@/server/queries/org";
 import { controleData } from "@/server/services/checkin";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Contrôle d'entrée" };
 
 export default async function Controle({ params }: PageProps<"/org/evenements/[id]/controle">) {
   const { id } = await params;
-  const { org } = await requireOrganisation();
+  const { org, acces } = await requireOrgPage("caisse", "/org");
   let m;
   try {
     m = await getManagedEvent(id, { orgId: org.id });
@@ -26,7 +26,7 @@ export default async function Controle({ params }: PageProps<"/org/evenements/[i
 
   return (
     <>
-      <EventHeader id={m.evt.id} titre={m.evt.titre} statut={m.evt.statut} current="controle" isPrincipal={m.isPrincipal} />
+      <EventHeader id={m.evt.id} titre={m.evt.titre} statut={m.evt.statut} current="controle" isPrincipal={m.isPrincipal} gerer={peut(acces, "gerer")} />
       <ControleScreen
         eventId={id}
         confirmes={data.confirmes}

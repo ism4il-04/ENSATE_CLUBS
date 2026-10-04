@@ -9,14 +9,14 @@ import { checkStandCookie, fermerSession, ouvrirSession, sessionPourInscription,
 import type { InscriptionState } from "./inscriptions";
 
 export async function ouvrirStandAction(eventId: string) {
-  const { user, org } = await requireOrganisation();
+  const { user, org } = await requireOrganisation("caisse");
   if (!(await roleOnEvent(org.id, eventId))) throw new AccessError("ACCES_REFUSE");
   await ouvrirSession({ eventId, orgId: org.id, compteId: user.id });
   revalidatePath(`/org/evenements/${eventId}/stand`);
 }
 
 export async function fermerStandAction(eventId: string, sessionId: string) {
-  const { org } = await requireOrganisation();
+  const { org } = await requireOrganisation("caisse");
   await fermerSession(sessionId, org.id);
   revalidatePath(`/org/evenements/${eventId}/stand`);
 }

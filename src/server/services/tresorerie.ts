@@ -102,9 +102,12 @@ export async function listTransactions(orgId: string, f: Filtres = {}) {
   if (f.type === "RECETTE" || f.type === "DEPENSE") conds.push(eq(s.transaction.type, f.type));
   if (f.evenement && /^[0-9a-f-]{36}$/.test(f.evenement)) conds.push(eq(s.transaction.idEvenement, f.evenement));
   return getDb()
-    .select({ t: s.transaction, evenement: s.evenement.titre })
+    .select({ t: s.transaction, evenement: s.evenement.titre, auteur: sql<string>`coalesce(${s.personne.prenom}, ${s.organisation.nom}, ${s.compte.email})` })
     .from(s.transaction)
     .leftJoin(s.evenement, eq(s.evenement.id, s.transaction.idEvenement))
+    .innerJoin(s.compte, eq(s.compte.id, s.transaction.idSaisiPar))
+    .leftJoin(s.personne, eq(s.personne.idCompte, s.compte.id))
+    .leftJoin(s.organisation, eq(s.organisation.idCompte, s.compte.id))
     .where(and(...conds))
     .orderBy(desc(s.transaction.dateOperation), desc(s.transaction.dateSaisie));
 }

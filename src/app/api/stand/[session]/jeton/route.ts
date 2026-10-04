@@ -6,7 +6,7 @@ import { jetonCourant } from "@/server/services/stand";
 export async function GET(_req: Request, { params }: RouteContext<"/api/stand/[session]/jeton">) {
   const { session } = await params;
   try {
-    const { org } = await requireOrganisation();
+    const { org } = await requireOrganisation("caisse");
     const j = await jetonCourant(session, org.id);
     if (!j) return NextResponse.json({ erreur: "SESSION_STAND_FERMEE" }, { status: 410 });
     return NextResponse.json(j, { headers: { "Cache-Control": "no-store" } });

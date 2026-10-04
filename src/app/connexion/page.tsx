@@ -77,7 +77,8 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    ["etudiant.demo@etu.uae.ac.ma", "Étudiant"],
+                    ["etudiant.demo@etu.uae.ac.ma", "Étudiante (trésorière CI)"],
+                    ["membre.demo@etu.uae.ac.ma", "Membre (stand CI)"],
                     ["externe.demo@example.com", "Externe"],
                     ["club.info.demo@example.com", "Club Informatique"],
                     ["club.robot.demo@example.com", "Club Robotique"],
@@ -87,7 +88,7 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
                 ).map(([email, label]) => (
                   <form key={email} action={devSignIn}>
                     <input type="hidden" name="email" value={email} />
-                    <input type="hidden" name="retour" value={label === "Coordinateur" ? "/coord" : label === "Admin" ? "/admin" : label.startsWith("Club") ? "/org" : retour} />
+                    <input type="hidden" name="retour" value={label === "Coordinateur" ? "/coord" : label === "Admin" ? "/admin" : label.startsWith("Club") || label.startsWith("Membre") ? "/org" : retour} />
                     <button type="submit" className="press h-11 w-full rounded-full border border-line-strong bg-surface text-sm font-extrabold">
                       {label}
                     </button>

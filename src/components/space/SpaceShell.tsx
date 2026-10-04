@@ -5,11 +5,13 @@ import { SpaceNav, type SpaceLink } from "./SpaceNav";
 /** Mise en page des espaces club / coordinateur / admin : menu latéral qui passe au-dessus sur téléphone. */
 export function SpaceShell({
   identity,
+  switcher,
   links,
   navLabel,
   children,
 }: {
   identity: { initials: string; name: string; sub: string; color: string };
+  switcher?: React.ReactNode;
   links: SpaceLink[];
   navLabel: string;
   children: React.ReactNode;
@@ -27,6 +29,7 @@ export function SpaceShell({
             <div className="text-xs text-muted">{identity.sub}</div>
           </div>
         </div>
+        {switcher}
         <SpaceNav links={links} label={navLabel} />
         <Link href="/" className="mt-auto hidden text-[13px] font-bold text-muted hover:text-paper md:block">
           ← Voir le site étudiant

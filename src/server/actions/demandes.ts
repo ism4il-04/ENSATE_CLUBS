@@ -14,7 +14,7 @@ async function run(input: DemandeInput, submit: boolean, mode: "org" | "coord"):
       const user = await requireRole("COORDINATEUR", "ADMIN");
       ctx = { compteId: user.id, coordinateur: true, submit };
     } else {
-      const { user, org } = await requireOrganisation();
+      const { user, org } = await requireOrganisation("gerer");
       ctx = { compteId: user.id, orgId: org.id, submit };
     }
     const { id } = await saveDemande(input, ctx);

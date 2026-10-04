@@ -16,6 +16,7 @@ type Tx = {
   idEvenement: string | null;
   evenement: string | null;
   justificatif: string | null;
+  auteur: string;
 };
 type Resume = {
   recettes: number;
@@ -335,7 +336,7 @@ export function TresorerieScreen(p: {
                     <span className="truncate font-extrabold">{t.libelle}</span>
                     <span className="truncate text-[13px] text-muted">
                       {dateFr(t.dateOperation)} · {t.categorie}
-                      {t.evenement ? ` · ${t.evenement}` : ""}
+                      {t.evenement ? ` · ${t.evenement}` : ""} · saisi par {t.auteur}
                     </span>
                   </div>
                   <div className="ml-auto flex items-center gap-3">

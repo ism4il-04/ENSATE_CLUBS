@@ -12,7 +12,7 @@ async function assertCanEdit(eventId: string) {
   const user = await getSessionUser();
   if (!user) throw new AccessError("NON_AUTHENTIFIE");
   if (user.role === "COORDINATEUR" || user.role === "ADMIN") return { coordinateur: true };
-  const { org } = await requireOrganisation();
+  const { org } = await requireOrganisation("gerer");
   if ((await roleOnEvent(org.id, eventId)) !== "PRINCIPAL") throw new AccessError("ACCES_REFUSE");
   return { coordinateur: false };
 }

@@ -133,7 +133,9 @@ Emails : `src/server/email` (gabarits HTML + texte, envoi groupé via Resend). A
 
 Trésorerie (`/org/tresorerie`) : réservée au compte de l'organisation par `requireFinance()` ; coordinateur et admin reçoivent 403. Les justificatifs sont envoyés en Cloudinary `authenticated` et ouverts par un lien de téléchargement signé valable 5 minutes.
 
-À venir : comptes membres et rôles (trésorier, président), routes `/api/v1` pour une future application mobile.
+Équipe (`/org/membres`) : président·e, trésorier·e et membres, chacun avec son compte Google ; droits par capacité (`gerer`, `caisse`, `finance`) dans `requireOrganisation()`.
+
+À venir : routes `/api/v1` pour une future application mobile.
 
 > La caméra (contrôle d'entrée) exige HTTPS ou `localhost` : pour tester sur un téléphone, passe par un déploiement Vercel.
 

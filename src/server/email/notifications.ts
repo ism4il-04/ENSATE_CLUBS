@@ -159,6 +159,31 @@ export async function annonceEnvoyee(annonceId: string, destinataires: { idInscr
   );
 }
 
+const ROLE_MEMBRE: Record<string, string> = {
+  PRESIDENT: "président·e : événements, publication, membres, trésorerie",
+  TRESORIER: "trésorier·e : caisse, stand et trésorerie",
+  MEMBRE: "membre : stand, caisse et contrôle d'entrée",
+};
+
+/** Ajout dans l'équipe d'une organisation (BF-43). */
+export async function membreAjoute(orgId: string, compteId: string, role: string) {
+  const db = getDb();
+  const [[org], [c]] = await Promise.all([
+    db.select({ nom: s.organisation.nom, couleur: s.organisation.couleur }).from(s.organisation).where(eq(s.organisation.id, orgId)).limit(1),
+    db.select({ email: s.compte.email, prenom: s.personne.prenom }).from(s.compte).leftJoin(s.personne, eq(s.personne.idCompte, s.compte.id)).where(eq(s.compte.id, compteId)).limit(1),
+  ]);
+  if (!org || !c) return;
+  await send([
+    compose(c.email, {
+      subject: `Tu rejoins l'équipe de ${org.nom}`,
+      title: `Bienvenue dans l'équipe de ${org.nom}`,
+      lines: [hello(c.prenom), `Tu as été ajouté comme ${ROLE_MEMBRE[role] ?? role}.`, "Connecte-toi avec ton compte Google habituel, puis ouvre « Espace club » dans le menu."],
+      cta: { label: "Ouvrir l'espace club", path: "/org" },
+      accent: org.couleur,
+    }),
+  ]);
+}
+
 /** Nouvel événement publié : prévient les participants qui suivent l'une des organisations (BF-17). */
 export async function nouvelEvenementPourAbonnes(eventId: string) {
   const c = await eventContext(eventId);

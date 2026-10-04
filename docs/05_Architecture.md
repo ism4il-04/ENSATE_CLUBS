@@ -135,7 +135,7 @@ Chaque service applique trois niveaux de contrôle :
 ### Confidentialité financière (RG-21)
 
 - Le module `finances` a son propre garde `requireFinance(compte, organisationId)`, qui :
-  - autorise **uniquement** le compte de l'organisation, ou en V2 un membre ayant le rôle `TRESORIER` ou `PRESIDENT` ;
+  - autorise **uniquement** le compte de l'organisation, ou un membre ayant le rôle `TRESORIER` ou `PRESIDENT` (en place : `requireOrganisation("finance")`) ;
   - **refuse explicitement** les rôles `COORDINATEUR` et `ADMIN` ;
   - est le seul point d'entrée des requêtes vers `TRANSACTION`.
 - Pas de fonction « se connecter en tant que » pour l'admin, qui contournerait ce garde.

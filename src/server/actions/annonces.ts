@@ -11,7 +11,7 @@ export type AnnonceResult = { ok: boolean; message: string; at: number } | null;
 export async function envoyerAnnonceAction(eventId: string, _prev: AnnonceResult, fd: FormData): Promise<AnnonceResult> {
   const at = Date.now();
   try {
-    const { user, org } = await requireOrganisation();
+    const { user, org } = await requireOrganisation("gerer");
     if (!(await roleOnEvent(org.id, eventId))) throw new AccessError("ACCES_REFUSE");
     const r = await creerAnnonce({
       eventId,

@@ -256,3 +256,19 @@ flowchart TD
 | Gérer les organisations et les lieux | | | | ✅ | ✅ |
 | Gérer tous les comptes | | | | | ✅ |
 | Trésorerie (V2) | | | ✅ (la sienne) | ❌ | ❌ |
+
+### Rôles dans une organisation (V2, BF-43)
+
+Chaque membre se connecte avec **son propre compte Google** (étudiant ou externe déjà inscrit) ; le compte commun du club garde tous les droits.
+
+| Action | Compte du club | Président·e | Trésorier·e | Membre |
+| --- | :-: | :-: | :-: | :-: |
+| Voir les événements de l'organisation | ✅ | ✅ | ✅ | ✅ |
+| Inscrits, stand, encaissement, contrôle d'entrée | ✅ | ✅ | ✅ | ✅ |
+| Demandes, publication, annonces, annulation, places membres, export des inscrits | ✅ | ✅ | | |
+| Profil du club, gestion des membres | ✅ | ✅ | | |
+| Trésorerie | ✅ | ✅ | ✅ | |
+
+- Personne ne peut changer son propre rôle ni se retirer (évite de se couper l'accès) ; un membre retiré garde sa ligne (date de fin) pour l'historique.
+- Une personne membre de plusieurs organisations choisit le club actif ; le serveur revérifie toujours l'appartenance.
+- Coordinateur et administrateur ne peuvent pas être membres d'une organisation (RG-21).

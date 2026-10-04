@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { DemandeWizard } from "@/components/org/DemandeWizard";
 import { PageTitle } from "@/components/space/SpaceShell";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { AccessError, requireOrgPage } from "@/server/permissions";
 import { getManagedEvent, listLieux, listOrganisations } from "@/server/queries/org";
 import { toWizardInitial } from "@/server/queries/wizard";
 import { periodesActives } from "@/server/services/periodes";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Modifier la demande" };
 
 export default async function ModifierDemande({ params }: PageProps<"/org/evenements/[id]/demande">) {
   const { id } = await params;
-  const { org } = await requireOrganisation();
+  const { org } = await requireOrgPage("gerer", "/org");
   let m;
   try {
     m = await getManagedEvent(id, { orgId: org.id });

@@ -1,25 +1,27 @@
-import { redirect } from "next/navigation";
 import { SpaceShell } from "@/components/space/SpaceShell";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { OrgSwitcher } from "@/components/org/OrgSwitcher";
+import { mesOrganisations, peut, requireOrgPage } from "@/server/permissions";
+
+const ACCES = { COMPTE: "Compte du club", PRESIDENT: "Président·e", TRESORIER: "Trésorier·e", MEMBRE: "Membre" } as const;
 
 export default async function OrgLayout({ children }: LayoutProps<"/org">) {
-  let ctx;
-  try {
-    ctx = await requireOrganisation();
-  } catch (e) {
-    if (e instanceof AccessError) redirect(e.code === "NON_AUTHENTIFIE" ? "/connexion?retour=/org" : "/");
-    throw e;
-  }
-  const { org } = ctx;
+  const { user, org, acces } = await requireOrgPage("caisse", "/org");
+  const autres = (await mesOrganisations(user.id, user.role)).map((x) => ({ id: x.org.id, nom: x.org.nom }));
   return (
     <SpaceShell
-      identity={{ initials: org.sigle ?? org.nom.slice(0, 2).toUpperCase(), name: org.nom, sub: "Espace organisation", color: org.couleur }}
+      identity={{ initials: org.sigle ?? org.nom.slice(0, 2).toUpperCase(), name: org.nom, sub: ACCES[acces], color: org.couleur }}
+      switcher={autres.length > 1 ? <OrgSwitcher orgs={autres} active={org.id} /> : undefined}
       navLabel="Espace organisation"
       links={[
         { href: "/org", label: "Mes événements", icon: "ticket", exact: true },
-        { href: "/org/evenements/nouveau", label: "Nouvel événement", icon: "grid" },
-        { href: "/org/tresorerie", label: "Trésorerie", icon: "wallet" },
-        { href: "/org/profil", label: "Profil du club", icon: "user" },
+        ...(peut(acces, "gerer") ? [{ href: "/org/evenements/nouveau", label: "Nouvel événement", icon: "grid" as const }] : []),
+        ...(peut(acces, "finance") ? [{ href: "/org/tresorerie", label: "Trésorerie", icon: "wallet" as const }] : []),
+        ...(peut(acces, "gerer")
+          ? [
+              { href: "/org/membres", label: "Membres", icon: "users" as const },
+              { href: "/org/profil", label: "Profil du club", icon: "user" as const },
+            ]
+          : []),
       ]}
     >
       {children}

@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { auth, type Role } from "@/auth";
 import { getDb, schema } from "@/server/db";
 
@@ -40,28 +42,81 @@ export async function requireRole(...roles: Role[]) {
   return user;
 }
 
-/** L'organisation liée au compte connecté (rôle ORGANISATION). */
-export async function requireOrganisation() {
-  const user = await requireRole("ORGANISATION");
-  const [org] = await getDb()
-    .select()
-    .from(schema.organisation)
-    .where(and(eq(schema.organisation.idCompte, user.id), eq(schema.organisation.statut, "ACTIVE")))
-    .limit(1);
-  if (!org) throw new AccessError("ACCES_REFUSE");
-  return { user, org };
+// ---------------------------------------------------------------- espace organisation (BF-43)
+
+/** Comment on accède à une organisation : son compte commun, ou un compte personnel de membre. */
+export type AccesOrg = "COMPTE" | "PRESIDENT" | "TRESORIER" | "MEMBRE";
+/**
+ * Capacités : gerer = publication, demandes, profil, annonces, membres, export des inscrits ;
+ * caisse = inscrits, stand, encaissement, contrôle d'entrée ; finance = trésorerie (RG-21).
+ */
+export type Capacite = "gerer" | "caisse" | "finance";
+const CAPACITES: Record<Capacite, readonly AccesOrg[]> = {
+  gerer: ["COMPTE", "PRESIDENT"],
+  caisse: ["COMPTE", "PRESIDENT", "TRESORIER", "MEMBRE"],
+  finance: ["COMPTE", "PRESIDENT", "TRESORIER"],
+};
+export const peut = (acces: AccesOrg, cap: Capacite) => CAPACITES[cap].includes(acces);
+
+/** Cookie du club actif, pour une personne membre de plusieurs organisations (toujours revérifié). */
+export const ORG_COOKIE = "org_active";
+
+/** Organisations accessibles au compte connecté, avec le type d'accès. */
+export const mesOrganisations = cache(async (userId: string, role: Role) => {
+  const db = getDb();
+  if (role === "ORGANISATION") {
+    const rows = await db
+      .select()
+      .from(schema.organisation)
+      .where(and(eq(schema.organisation.idCompte, userId), eq(schema.organisation.statut, "ACTIVE")))
+      .limit(1);
+    return rows.map((org) => ({ org, acces: "COMPTE" as AccesOrg }));
+  }
+  if (role !== "ETUDIANT" && role !== "EXTERNE") return []; // coordinateur et admin ne sont jamais membres (RG-21)
+  const rows = await db
+    .select({ org: schema.organisation, role: schema.membreOrganisation.role })
+    .from(schema.membreOrganisation)
+    .innerJoin(schema.organisation, eq(schema.organisation.id, schema.membreOrganisation.idOrganisation))
+    .where(and(eq(schema.membreOrganisation.idCompte, userId), isNull(schema.membreOrganisation.dateFin), eq(schema.organisation.statut, "ACTIVE")))
+    .orderBy(asc(schema.organisation.nom));
+  return rows.map((r) => ({ org: r.org, acces: r.role as AccesOrg }));
+});
+
+async function organisationActive(cap: Capacite) {
+  const user = await getSessionUser();
+  if (!user) return { error: "NON_AUTHENTIFIE" as const };
+  if (user.role === "COORDINATEUR" || user.role === "ADMIN") return { error: "ACCES_REFUSE" as const };
+  const list = await mesOrganisations(user.id, user.role);
+  if (!list.length) return { error: "ACCES_REFUSE" as const };
+  const wanted = (await cookies()).get(ORG_COOKIE)?.value;
+  const choisie = list.find((x) => x.org.id === wanted) ?? list[0];
+  if (!peut(choisie.acces, cap)) return { error: "CAPACITE" as const, acces: choisie.acces };
+  return { user, org: choisie.org, acces: choisie.acces, autres: list.length - 1 };
+}
+
+/** Action / API : organisation active du compte connecté, avec la capacité demandée (sinon AccessError). */
+export async function requireOrganisation(cap: Capacite) {
+  const r = await organisationActive(cap);
+  if ("error" in r) throw new AccessError(r.error === "NON_AUTHENTIFIE" ? "NON_AUTHENTIFIE" : "ACCES_REFUSE");
+  return r;
+}
+
+/** Page : comme requireOrganisation, mais redirige (connexion, accueil du club, ou accueil du site). */
+export async function requireOrgPage(cap: Capacite, retour: string) {
+  const r = await organisationActive(cap);
+  if ("error" in r) {
+    if (r.error === "NON_AUTHENTIFIE") redirect(`/connexion?retour=${encodeURIComponent(retour)}`);
+    redirect(r.error === "CAPACITE" ? "/org" : "/");
+  }
+  return r;
 }
 
 /**
- * Garde de la trésorerie (RG-21, docs/05 §5) : seul le compte de l'organisation y accède.
+ * Garde de la trésorerie (RG-21, docs/05 §5) : compte de l'organisation, président ou trésorier.
  * COORDINATEUR et ADMIN sont refusés explicitement, quelle que soit l'organisation demandée.
- * (V2 suivante : un membre TRESORIER ou PRESIDENT de l'organisation.)
  */
 export async function requireFinance() {
-  const user = await getSessionUser();
-  if (!user) throw new AccessError("NON_AUTHENTIFIE");
-  if (user.role === "COORDINATEUR" || user.role === "ADMIN") throw new AccessError("ACCES_REFUSE");
-  return requireOrganisation();
+  return requireOrganisation("finance");
 }
 
 /** Rôle de l'organisation connectée sur un événement (ou null). Les sous-événements héritent du parent. */

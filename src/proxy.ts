@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 // revérifient toujours les droits côté serveur (src/server/permissions.ts).
 const RULES: { prefix: string; roles: string[] | null }[] = [
   { prefix: "/moi", roles: null }, // tout compte connecté
-  { prefix: "/org", roles: ["ORGANISATION"] },
+  { prefix: "/org", roles: null }, // compte du club ou membre : vérifié par requireOrgPage dans chaque page
   { prefix: "/coord", roles: ["COORDINATEUR", "ADMIN"] },
   { prefix: "/admin", roles: ["ADMIN"] },
 ];

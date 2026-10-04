@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EventHeader } from "@/components/org/EventHeader";
 import { StandScreen } from "@/components/org/StandScreen";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { AccessError, peut, requireOrgPage } from "@/server/permissions";
 import { getManagedEvent } from "@/server/queries/org";
 import { listInscrits } from "@/server/services/caisse";
 import { sessionActive } from "@/server/services/stand";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Stand" };
 
 export default async function Stand({ params }: PageProps<"/org/evenements/[id]/stand">) {
   const { id } = await params;
-  const { org } = await requireOrganisation();
+  const { org, acces } = await requireOrgPage("caisse", "/org");
   let m;
   try {
     m = await getManagedEvent(id, { orgId: org.id });
@@ -25,7 +25,7 @@ export default async function Stand({ params }: PageProps<"/org/evenements/[id]/
 
   return (
     <>
-      <EventHeader id={evt.id} titre={evt.titre} statut={evt.statut} current="stand" isPrincipal={m.isPrincipal} />
+      <EventHeader id={evt.id} titre={evt.titre} statut={evt.statut} current="stand" isPrincipal={m.isPrincipal} gerer={peut(acces, "gerer")} />
       <StandScreen
         eventId={evt.id}
         sessionId={session?.id ?? null}

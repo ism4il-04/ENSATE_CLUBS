@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/moi/SignOutButton";
 import { requireUser } from "@/server/permissions";
 import { getPersonne } from "@/server/queries/moi";
 import { listSuivis, peutSuivre } from "@/server/services/suivi";
+import { mesOrganisations } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Mon profil" };
 
@@ -19,7 +20,7 @@ const ROLE: Record<string, string> = {
 
 export default async function Profil() {
   const user = await requireUser("/moi/profil");
-  const [personne, session, suivis] = await Promise.all([getPersonne(user.id), auth(), peutSuivre(user.role) ? listSuivis(user.id) : []]);
+  const [personne, session, suivis, equipes] = await Promise.all([getPersonne(user.id), auth(), peutSuivre(user.role) ? listSuivis(user.id) : [], mesOrganisations(user.id, user.role)]);
   const nom = [personne?.prenom, personne?.nom].filter(Boolean).join(" ") || session?.user?.name || user.email || "";
   const photo = personne?.photoUrl ?? session?.user?.image;
 
@@ -45,6 +46,16 @@ export default async function Profil() {
       </div>
 
       {personne && <ProfilForm telephone={personne.telephone ?? ""} niveau={personne.niveau ?? ""} organisme={personne.organisme ?? ""} externe={user.role === "EXTERNE"} />}
+
+      {user.role !== "ORGANISATION" && equipes.length > 0 && (
+        <Link href="/org" className="press flex items-center justify-between gap-3 rounded-3xl border border-accent/50 bg-accent/8 p-4">
+          <span className="flex flex-col">
+            <span className="font-extrabold">Espace club</span>
+            <span className="text-[13px] text-muted">{equipes.map((e) => e.org.nom).join(" · ")}</span>
+          </span>
+          <span aria-hidden className="text-accent">→</span>
+        </Link>
+      )}
 
       {peutSuivre(user.role) && (
         <div className="flex flex-col gap-2.5 rounded-3xl border border-line bg-surface p-4">

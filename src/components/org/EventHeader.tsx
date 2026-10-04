@@ -26,6 +26,7 @@ export function EventHeader({
   current,
   partenaires,
   isPrincipal,
+  gerer = true,
   base = "/org",
 }: {
   id: string;
@@ -34,10 +35,14 @@ export function EventHeader({
   current: (typeof TABS)[number][0];
   partenaires?: string;
   isPrincipal: boolean;
+  /** Compte du club ou président : publication et annonces. */
+  gerer?: boolean;
   base?: string;
 }) {
   const st = STATUT_EVENEMENT[statut];
-  const tabs = TABS.filter(([k]) => (k === "publication" ? isPrincipal && (statut === "VALIDE" || statut === "PUBLIE") : VISIBLE[k].includes(statut)));
+  const tabs = TABS.filter(([k]) =>
+    k === "publication" ? gerer && isPrincipal && (statut === "VALIDE" || statut === "PUBLIE") : k === "annonces" ? gerer && VISIBLE[k].includes(statut) : VISIBLE[k].includes(statut),
+  );
   return (
     <>
       <Link href={base} className="flex min-h-10 items-center gap-1.5 self-start text-sm font-bold text-muted">

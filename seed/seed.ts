@@ -55,6 +55,7 @@ async function main() {
   const people = [
     { email: "etudiant.demo@etu.uae.ac.ma", role: "ETUDIANT" as const, prenom: "Yasmine", nom: "El Amrani", niveau: "GI2" },
     { email: "externe.demo@example.com", role: "EXTERNE" as const, prenom: "Karim", nom: "Bennani", niveau: null },
+    { email: "membre.demo@etu.uae.ac.ma", role: "ETUDIANT" as const, prenom: "Omar", nom: "Haddad", niveau: "1A" },
     { email: "coordination.demo@example.com", role: "COORDINATEUR" as const, prenom: "Coordination", nom: "Clubs", niveau: null },
     { email: "admin.demo@example.com", role: "ADMIN" as const, prenom: "Admin", nom: "ENSATE", niveau: null },
   ];
@@ -62,7 +63,7 @@ async function main() {
   for (const p of people) {
     await db.insert(s.compte).values({ email: p.email, role: p.role }).onConflictDoNothing();
     const [c] = await db.select().from(s.compte).where(eq(s.compte.email, p.email));
-    ids[p.role] = c.id;
+    ids[p.role === "ETUDIANT" && p.prenom === "Omar" ? "MEMBRE" : p.role] = c.id;
     await db.insert(s.personne).values({ idCompte: c.id, prenom: p.prenom, nom: p.nom, niveau: p.niveau }).onConflictDoNothing();
   }
   console.log(`✓ ${people.length} comptes de démonstration`);
@@ -131,6 +132,13 @@ async function main() {
       await db.insert(s.tarif).values(e.tarifs.map(([libelle, prix, affiche], i) => ({ idEvenement: evt.id, libelle, prix: String(prix), affiche, ordre: i })));
     console.log(`✓ événement ${e.titre}`);
   }
+
+  // ---- Démo : équipe du Club Informatique (Yasmine trésorière, Omar membre pour le stand)
+  for (const [compteId, role] of [[ids.ETUDIANT, "TRESORIER"], [ids.MEMBRE, "MEMBRE"]] as const) {
+    const deja = await db.select({ id: s.membreOrganisation.id }).from(s.membreOrganisation).where(eq(s.membreOrganisation.idCompte, compteId));
+    if (!deja.length) await db.insert(s.membreOrganisation).values({ role, anneeUniversitaire: "2026-2027", idCompte: compteId, idOrganisation: orgIds["club-informatique"], idAjoutePar: createur });
+  }
+  console.log("✓ équipe du Club Informatique");
 
   // ---- Démo : une demande en attente pour le coordinateur
   if (!(await db.select({ id: s.evenement.id }).from(s.evenement).where(eq(s.evenement.slug, "atelier-git-github"))).length) {

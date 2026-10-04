@@ -22,7 +22,7 @@ const Profil = z.object({
 
 export async function updateOrgProfil(_prev: OrgProfilState, formData: FormData): Promise<OrgProfilState> {
   try {
-    const { org } = await requireOrganisation();
+    const { org } = await requireOrganisation("gerer");
     const parsed = Profil.safeParse(Object.fromEntries(["sigle", "description", "couleur", "emailContact", "telephoneContact", "instagram", "linkedin", "logoUrl"].map((k) => [k, String(formData.get(k) ?? "")])));
     if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Données invalides." };
     await getDb().update(s.organisation).set(parsed.data).where(eq(s.organisation.id, org.id));

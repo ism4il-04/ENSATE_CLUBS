@@ -4,7 +4,7 @@ import { PageTitle } from "@/components/space/SpaceShell";
 import { Icon } from "@/components/ui/Icon";
 import { dateStamp, rangeLabel } from "@/lib/format";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
-import { requireOrganisation } from "@/server/permissions";
+import { peut, requireOrgPage } from "@/server/permissions";
 import { listOrgEvents } from "@/server/queries/org";
 
 export const metadata: Metadata = { title: "Mes événements" };
@@ -18,7 +18,8 @@ const TABS = [
 ] as const;
 
 export default async function OrgDashboard({ searchParams }: PageProps<"/org">) {
-  const { org } = await requireOrganisation();
+  const { org, acces } = await requireOrgPage("caisse", "/org");
+  const gerer = peut(acces, "gerer");
   const tab = String((await searchParams).tab ?? "ALL");
   const all = await listOrgEvents(org.id);
   const group = (st: keyof typeof STATUT_EVENEMENT) => STATUT_EVENEMENT[st].group;
@@ -27,9 +28,11 @@ export default async function OrgDashboard({ searchParams }: PageProps<"/org">) 
   return (
     <>
       <PageTitle kicker={org.nom} title="Mes événements">
-        <Link href="/org/evenements/nouveau" className="press flex h-12 items-center gap-2 rounded-full bg-accent px-5 font-extrabold text-ink">
-          <Icon name="grid" /> Nouvel événement
-        </Link>
+        {gerer && (
+          <Link href="/org/evenements/nouveau" className="press flex h-12 items-center gap-2 rounded-full bg-accent px-5 font-extrabold text-ink">
+            <Icon name="grid" /> Nouvel événement
+          </Link>
+        )}
       </PageTitle>
 
       <nav aria-label="Filtrer par statut" className="no-scrollbar flex gap-2 overflow-x-auto">
@@ -54,7 +57,7 @@ export default async function OrgDashboard({ searchParams }: PageProps<"/org">) 
         {list.map(({ evt, role, principal, debut, fin, confirmes, pre, derniereDecision }, i) => {
           const st = STATUT_EVENEMENT[evt.statut];
           const stamp = debut ? dateStamp(debut) : null;
-          const editable = role === "PRINCIPAL" && (evt.statut === "BROUILLON" || evt.statut === "MODIF_DEMANDEE");
+          const editable = gerer && role === "PRINCIPAL" && (evt.statut === "BROUILLON" || evt.statut === "MODIF_DEMANDEE");
           const pct = evt.capacite ? Math.round((confirmes / Math.max(1, evt.capacite - evt.placesMembres)) * 100) : 0;
           return (
             <article
@@ -96,7 +99,7 @@ export default async function OrgDashboard({ searchParams }: PageProps<"/org">) 
                     {evt.statut === "BROUILLON" ? "Continuer" : "Corriger et resoumettre"}
                   </Link>
                 )}
-                {(evt.statut === "VALIDE" || evt.statut === "PUBLIE") && role === "PRINCIPAL" && (
+                {gerer && (evt.statut === "VALIDE" || evt.statut === "PUBLIE") && role === "PRINCIPAL" && (
                   <Link
                     href={`/org/evenements/${evt.id}/publication`}
                     className={`press flex h-11 items-center rounded-full px-4 text-sm font-extrabold ${evt.statut === "VALIDE" ? "bg-accent text-ink" : "border border-line-strong"}`}

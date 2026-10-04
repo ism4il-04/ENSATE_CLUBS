@@ -13,7 +13,7 @@ export async function annulerEvenementAction(eventId: string, motif: string): Pr
     const user = await getSessionUser();
     if (!user) throw new AccessError("NON_AUTHENTIFIE");
     const coordinateur = user.role === "COORDINATEUR" || user.role === "ADMIN";
-    const orgId = coordinateur ? undefined : (await requireOrganisation()).org.id;
+    const orgId = coordinateur ? undefined : (await requireOrganisation("gerer")).org.id;
     const evt = await annulerEvenement({ eventId, orgId, coordinateur });
     notify(() => evenementAnnule(eventId, motif.slice(0, 500), coordinateur));
     revalidatePath("/", "layout");

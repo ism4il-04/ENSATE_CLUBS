@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AnnonceForm } from "@/components/org/AnnonceForm";
 import { EventHeader } from "@/components/org/EventHeader";
 import { dayLabel, timeLabel } from "@/lib/format";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { AccessError, requireOrgPage } from "@/server/permissions";
 import { getManagedEvent } from "@/server/queries/org";
 import { annoncesRestantes, compterDestinataires, listAnnonces } from "@/server/services/annonces";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Annonces" };
 
 export default async function Annonces({ params }: PageProps<"/org/evenements/[id]/annonces">) {
   const { id } = await params;
-  const { org } = await requireOrganisation();
+  const { org } = await requireOrgPage("gerer", "/org");
   let m;
   try {
     m = await getManagedEvent(id, { orgId: org.id });

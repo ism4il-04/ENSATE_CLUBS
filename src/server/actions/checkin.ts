@@ -15,7 +15,7 @@ export type CheckinView =
 /** Le QR du billet contient uniquement le jeton (RG-20). Organisation principale ou partenaire. */
 export async function checkinAction(eventId: string, creneauId: string, input: { token?: string; inscriptionId?: string }): Promise<CheckinView> {
   try {
-    const { user, org } = await requireOrganisation();
+    const { user, org } = await requireOrganisation("caisse");
     if (!(await roleOnEvent(org.id, eventId))) throw new AccessError("ACCES_REFUSE");
     const token = input.token?.trim().split("/").pop();
     const r: CheckinResult = await checkin({ eventId, creneauId, scannerId: user.id, token: token || undefined, inscriptionId: input.inscriptionId });

@@ -12,10 +12,10 @@ export async function GET() {
   try {
     const { org } = await requireFinance();
     const rows = await listTransactions(org.id);
-    const header = ["Date", "Libellé", "Catégorie", "Événement", "Recette (DH)", "Dépense (DH)", "Justificatif"];
+    const header = ["Date", "Libellé", "Catégorie", "Événement", "Recette (DH)", "Dépense (DH)", "Justificatif", "Saisi par"];
     const num = (v: string) => Number(v).toFixed(2).replace(".", ","); // positif : jamais pris pour une formule
-    const lines = rows.map(({ t, evenement }) =>
-      [t.dateOperation, t.libelle, t.categorie, evenement ?? "", t.type === "RECETTE" ? num(t.montant) : "", t.type === "DEPENSE" ? num(t.montant) : "", t.justificatifId ? "oui" : ""]
+    const lines = rows.map(({ t, evenement, auteur }) =>
+      [t.dateOperation, t.libelle, t.categorie, evenement ?? "", t.type === "RECETTE" ? num(t.montant) : "", t.type === "DEPENSE" ? num(t.montant) : "", t.justificatifId ? "oui" : "", auteur]
         .map(cell)
         .join(";"),
     );

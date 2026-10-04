@@ -12,7 +12,7 @@
 - **COMPTE** (**id_compte**, email, google_sub, role, statut, date_creation, derniere_connexion, #id_createur → COMPTE)
 - **PERSONNE** (**#id_compte**, nom, prenom, photo_url, telephone, niveau, organisme)
 - **ORGANISATION** (**id_organisation**, type, nom, sigle, slug, description, logo_url, couverture_url, couleur, email_contact, telephone_contact, instagram, linkedin, statut, date_creation, #id_compte)
-- **MEMBRE_ORGANISATION** *(V2)* (**id_membre**, role, annee_universitaire, date_debut, date_fin, #id_compte, #id_organisation)
+- **MEMBRE_ORGANISATION** *(V2, en place)* (**id_membre**, role [PRESIDENT, TRESORIER, MEMBRE], annee_universitaire, date_debut, date_fin, #id_compte, #id_organisation, #id_ajoute_par → COMPTE)
 
 ### Lieux et événements
 

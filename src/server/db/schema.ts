@@ -41,6 +41,7 @@ export const typeMedia = pgEnum("type_media", ["AFFICHE", "PLANNING", "PHOTO"]);
 export const statutInscription = pgEnum("statut_inscription", ["PRE_INSCRITE", "CONFIRMEE", "LISTE_ATTENTE", "ANNULEE"]);
 export const sourceInscription = pgEnum("source_inscription", ["EN_LIGNE", "STAND", "MEMBRE"]);
 export const typeTransaction = pgEnum("type_transaction", ["RECETTE", "DEPENSE"]);
+export const roleMembre = pgEnum("role_membre", ["PRESIDENT", "TRESORIER", "MEMBRE"]);
 
 // ---------------------------------------------------------------- comptes
 
@@ -333,4 +334,27 @@ export const periodeBloquee = pgTable(
     idCreateur: uuid("id_createur").notNull().references(() => compte.id),
   },
   (t) => [check("periode_dates_chk", sql`${t.debut} <= ${t.fin}`), index("periode_fin_idx").on(t.fin)],
+);
+
+/**
+ * Membres d'une organisation (BF-43) : un compte personnel (étudiant ou externe) avec un rôle.
+ * PRESIDENT : tout sauf la gestion du compte ; TRESORIER : caisse + trésorerie ; MEMBRE : stand, caisse, contrôle.
+ * Un membre qui quitte l'organisation garde sa ligne (date_fin renseignée) pour l'historique.
+ */
+export const membreOrganisation = pgTable(
+  "membre_organisation",
+  {
+    id: uuid("id_membre").primaryKey().defaultRandom(),
+    role: roleMembre("role").notNull(),
+    anneeUniversitaire: text("annee_universitaire").notNull(), // « 2026-2027 »
+    dateDebut: ts("date_debut").notNull().defaultNow(),
+    dateFin: ts("date_fin"),
+    idCompte: uuid("id_compte").notNull().references(() => compte.id),
+    idOrganisation: uuid("id_organisation").notNull().references(() => organisation.id),
+    idAjoutePar: uuid("id_ajoute_par").notNull().references(() => compte.id),
+  },
+  (t) => [
+    uniqueIndex("membre_actif_uq").on(t.idCompte, t.idOrganisation).where(sql`${t.dateFin} IS NULL`),
+    index("membre_organisation_idx").on(t.idOrganisation),
+  ],
 );

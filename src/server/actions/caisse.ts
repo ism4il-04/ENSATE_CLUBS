@@ -9,7 +9,7 @@ import {
   placeMembreAttribuee,
   promotionListeAttente,
 } from "@/server/email/notifications";
-import { AccessError, requireOrganisation, roleOnEvent } from "@/server/permissions";
+import { AccessError, requireOrganisation, roleOnEvent, type Capacite } from "@/server/permissions";
 import {
   annulerPaiement,
   annulerParOrganisation,
@@ -34,8 +34,8 @@ const MESSAGES: Record<string, string> = {
 };
 
 /** Organisation principale ou partenaire de l'événement. */
-async function organiser(eventId: string) {
-  const { user, org } = await requireOrganisation();
+async function organiser(eventId: string, cap: Capacite = "caisse") {
+  const { user, org } = await requireOrganisation(cap);
   if (!(await roleOnEvent(org.id, eventId))) throw new AccessError("ACCES_REFUSE");
   return { user, org };
 }
@@ -84,7 +84,7 @@ export async function annulerInscriptionAction(eventId: string, inscriptionId: s
 
 export async function attribuerPlaceAction(eventId: string, compteId: string, nom: string) {
   return wrap(eventId, async () => {
-    await organiser(eventId);
+    await organiser(eventId, "gerer");
     await attribuerPlaceMembre({ eventId, compteId });
     notify(() => placeMembreAttribuee(eventId, compteId));
     return `Place membre attribuée à ${nom}.`;
@@ -105,6 +105,6 @@ export async function trouverBilletAction(eventId: string, token: string): Promi
 }
 
 export async function chercherEtudiantsAction(eventId: string, q: string) {
-  await organiser(eventId);
+  await organiser(eventId, "gerer");
   return chercherEtudiants(q);
 }

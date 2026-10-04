@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { EventHeader } from "@/components/org/EventHeader";
 import { InscritsTable } from "@/components/org/InscritsTable";
 import { Icon } from "@/components/ui/Icon";
-import { AccessError, requireOrganisation } from "@/server/permissions";
+import { AccessError, peut, requireOrgPage } from "@/server/permissions";
 import { getManagedEvent } from "@/server/queries/org";
 import { listInscrits } from "@/server/services/caisse";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Inscrits" };
 
 export default async function Inscrits({ params }: PageProps<"/org/evenements/[id]/inscrits">) {
   const { id } = await params;
-  const { org } = await requireOrganisation();
+  const { org, acces } = await requireOrgPage("caisse", "/org");
   let m;
   try {
     m = await getManagedEvent(id, { orgId: org.id });
@@ -36,7 +36,7 @@ export default async function Inscrits({ params }: PageProps<"/org/evenements/[i
         titre={evt.titre}
         statut={evt.statut}
         current="inscrits"
-        isPrincipal={m.isPrincipal}
+        isPrincipal={m.isPrincipal} gerer={peut(acces, "gerer")}
         partenaires={m.orgs.filter((o) => o.role === "PARTENAIRE").map((o) => o.nom).join(", ")}
       />
       <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))]">
@@ -48,9 +48,11 @@ export default async function Inscrits({ params }: PageProps<"/org/evenements/[i
         ))}
       </div>
       <div className="flex justify-end">
-        <a href={`/org/evenements/${id}/inscrits/export`} className="press flex h-11 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-extrabold">
-          <Icon name="arrowRight" className="rotate-90" /> Exporter (Excel / CSV)
-        </a>
+        {peut(acces, "gerer") && (
+          <a href={`/org/evenements/${id}/inscrits/export`} className="press flex h-11 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-extrabold">
+            <Icon name="arrowRight" className="rotate-90" /> Exporter (Excel / CSV)
+          </a>
+        )}
       </div>
       <InscritsTable
         eventId={evt.id}
@@ -58,7 +60,7 @@ export default async function Inscrits({ params }: PageProps<"/org/evenements/[i
         tarifs={tarifs}
         gratuit={evt.gratuit}
         telephoneRequis={evt.telephoneRequis}
-        placesMembres={evt.placesMembres}
+        placesMembres={peut(acces, "gerer") ? evt.placesMembres : 0}
         membresAttribues={stats.membres}
       />
       <p className="text-[13px] text-faint">

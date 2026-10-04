@@ -14,7 +14,7 @@ const cell = (v: unknown) => {
 export async function GET(_req: Request, { params }: RouteContext<"/org/evenements/[id]/inscrits/export">) {
   const { id } = await params;
   try {
-    const { org } = await requireOrganisation();
+    const { org } = await requireOrganisation("gerer");
     if (!(await roleOnEvent(org.id, id))) throw new AccessError("ACCES_REFUSE");
     const { evt, list, creneaux } = await listInscrits(id, org.id);
     const header = ["Nom", "Email", "Organisme (externes)", "Téléphone", "Source", "Statut", "Tarif", "Montant (DH)", "Encaissé par", ...creneaux.map((_, i) => `Jour ${i + 1}`)];
