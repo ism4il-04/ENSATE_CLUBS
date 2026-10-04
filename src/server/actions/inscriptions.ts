@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { inscriptionEnregistree, notify, promotionListeAttente } from "@/server/email/notifications";
 import { getSessionUser } from "@/server/permissions";
 import { annulerParEtudiant, inscrire, InscriptionError, type InscriptionErreur } from "@/server/services/inscriptions";
 
@@ -41,6 +42,7 @@ export async function inscrireEnLigne(_prev: InscriptionState, formData: FormDat
       source: "EN_LIGNE",
       telephone: (formData.get("telephone") as string | null) ?? null,
     });
+    notify(() => inscriptionEnregistree(inscription.id));
     revalidatePath(`/evenements/${slug}`);
     revalidatePath("/moi/billets");
     return { ok: true, statut: inscription.statut as "CONFIRMEE", inscriptionId: inscription.id };
@@ -55,7 +57,8 @@ export async function annulerInscription(formData: FormData) {
   const user = await getSessionUser();
   if (!user) return;
   try {
-    await annulerParEtudiant(user.id, String(formData.get("inscriptionId") ?? ""));
+    const { promu } = await annulerParEtudiant(user.id, String(formData.get("inscriptionId") ?? ""));
+    if (promu) notify(() => promotionListeAttente(promu));
   } catch (e) {
     if (!(e instanceof InscriptionError)) throw e;
   }

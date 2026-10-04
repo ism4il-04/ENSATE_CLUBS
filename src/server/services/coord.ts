@@ -115,7 +115,6 @@ export async function decider(p: { eventId: string; coordId: string; decision: "
     await tx.update(s.evenement).set({ statut: p.decision, dateMaj: new Date() }).where(eq(s.evenement.id, evt.id));
     await tx.update(s.evenement).set({ statut: p.decision }).where(eq(s.evenement.idParent, evt.id));
     await tx.insert(s.decision).values({ idEvenement: evt.id, idCoordinateur: p.coordId, decision: p.decision, commentaire: commentaire || null });
-    // TODO : notifier l'organisation principale par email.
     return evt;
   });
 }
@@ -142,7 +141,6 @@ export async function remplacerCreneaux(eventId: string, creneaux: { date: strin
       await tx.insert(s.creneauLieu).values(c.lieux.map((l) => ({ idCreneau: row.id, idLieu: l.idLieu, precision: l.precision?.trim() || null })));
     }
     await tx.update(s.evenement).set({ dateMaj: new Date() }).where(eq(s.evenement.id, eventId));
-    // TODO : prévenir les inscrits du changement.
     return evt;
   });
 }

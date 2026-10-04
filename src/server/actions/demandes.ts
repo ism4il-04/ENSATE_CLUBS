@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { creeParCoordinateur, demandeSoumise, notify } from "@/server/email/notifications";
 import { AccessError, requireOrganisation, requireRole } from "@/server/permissions";
 import { DemandeError, saveDemande, type DemandeInput } from "@/server/services/demandes";
 
@@ -17,6 +18,7 @@ async function run(input: DemandeInput, submit: boolean, mode: "org" | "coord"):
       ctx = { compteId: user.id, orgId: org.id, submit };
     }
     const { id } = await saveDemande(input, ctx);
+    if (submit) notify(() => (mode === "coord" ? creeParCoordinateur(id) : demandeSoumise(id)));
     revalidatePath("/org");
     revalidatePath("/coord");
     return { ok: true, id, submitted: submit };

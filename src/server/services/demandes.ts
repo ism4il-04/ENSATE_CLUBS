@@ -163,7 +163,6 @@ export async function saveDemande(input: DemandeInput, ctx: { compteId: string; 
       if (ctx.coordinateur) {
         await tx.insert(s.decision).values({ idEvenement: eventId, idCoordinateur: ctx.compteId, decision: "VALIDE", commentaire: "Créé par le coordinateur" });
       }
-      // TODO : notifier le coordinateur (ou le club) par email.
     }
     return { id: eventId };
   });

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { creneauxModifies, decisionRendue, notify } from "@/server/email/notifications";
 import { AccessError, requireRole } from "@/server/permissions";
 import { decider, DecisionError, remplacerCreneaux } from "@/server/services/coord";
 
@@ -10,6 +11,7 @@ export async function deciderAction(eventId: string, decision: "VALIDE" | "REFUS
   try {
     const user = await requireRole("COORDINATEUR", "ADMIN");
     const evt = await decider({ eventId, coordId: user.id, decision, commentaire });
+    notify(() => decisionRendue(eventId, decision, commentaire));
     revalidatePath("/coord");
     revalidatePath("/org");
     const msg = { VALIDE: `« ${evt.titre} » validé : le club peut le publier.`, MODIF_DEMANDEE: "Modification demandée au club.", REFUSE: `« ${evt.titre} » refusé : le club voit ton commentaire.` };
@@ -29,6 +31,7 @@ export async function remplacerCreneauxAction(
   try {
     await requireRole("COORDINATEUR", "ADMIN");
     const evt = await remplacerCreneaux(eventId, creneaux);
+    notify(() => creneauxModifies(eventId));
     revalidatePath("/coord", "layout");
     revalidatePath(`/evenements/${evt.slug}`);
     return { ok: true, message: "Créneaux mis à jour." };

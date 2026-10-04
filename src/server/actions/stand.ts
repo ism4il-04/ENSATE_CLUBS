@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { inscriptionEnregistree, notify } from "@/server/email/notifications";
 import { AccessError, getSessionUser, requireOrganisation, roleOnEvent } from "@/server/permissions";
 import { inscrire, InscriptionError } from "@/server/services/inscriptions";
 import { checkStandCookie, fermerSession, ouvrirSession, sessionPourInscription, standCookieName } from "@/server/services/stand";
@@ -48,6 +49,7 @@ export async function inscrireAuStand(_prev: InscriptionState, formData: FormDat
       telephone: (formData.get("telephone") as string | null) ?? null,
       sessionStandId: sessionId,
     });
+    notify(() => inscriptionEnregistree(inscription.id));
     revalidatePath(`/org/evenements/${ctx.evt.id}/stand`);
     return { ok: true, statut: inscription.statut as "CONFIRMEE", inscriptionId: inscription.id };
   } catch (e) {

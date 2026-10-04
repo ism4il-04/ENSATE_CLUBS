@@ -46,7 +46,8 @@ async function getInscription(tx: Tx, eventId: string, inscriptionId: string) {
 /** Marque payé avec le tarif choisi par l'organisation (RG-13, RG-18, RG-32, RG-33). */
 export async function marquerPaye(p: { eventId: string; inscriptionId: string; tarifId: string; orgId: string }) {
   return withTx(async (tx) => {
-    const { placeLibre } = await lockEvent(tx, p.eventId);
+    const { evt, publics, placeLibre } = await lockEvent(tx, p.eventId);
+    if (evt.statut !== "PUBLIE") throw new CaisseError("STATUT_INVALIDE");
     const ins = await getInscription(tx, p.eventId, p.inscriptionId);
     if (ins.statut !== "PRE_INSCRITE") throw new CaisseError("STATUT_INVALIDE");
     const [tarif] = await tx.select().from(s.tarif).where(and(eq(s.tarif.id, p.tarifId), eq(s.tarif.idEvenement, p.eventId)));
@@ -56,7 +57,9 @@ export async function marquerPaye(p: { eventId: string; inscriptionId: string; t
       .update(s.inscription)
       .set({ statut: "CONFIRMEE", idTarif: tarif.id, montantPaye: tarif.prix, datePaiement: new Date(), idOrganisationEncaisse: p.orgId })
       .where(eq(s.inscription.id, ins.id));
-    return { montant: Number(tarif.prix), tarif: tarif.libelle };
+    // RG-26 : ce paiement prend-il la dernière place publique ?
+    const complet = ins.source !== "MEMBRE" && evt.capacite !== null && publics + 1 >= evt.capacite - evt.placesMembres;
+    return { montant: Number(tarif.prix), tarif: tarif.libelle, complet };
   });
 }
 
@@ -89,8 +92,12 @@ export async function annulerParOrganisation(p: { eventId: string; inscriptionId
         .where(and(eq(s.inscription.idEvenement, evt.id), eq(s.inscription.statut, "LISTE_ATTENTE")))
         .orderBy(asc(s.inscription.dateInscription))
         .limit(1);
-      if (next) await tx.update(s.inscription).set({ statut: "CONFIRMEE" }).where(eq(s.inscription.id, next.id));
+      if (next) {
+        await tx.update(s.inscription).set({ statut: "CONFIRMEE" }).where(eq(s.inscription.id, next.id));
+        return { promu: next.id };
+      }
     }
+    return { promu: null };
   });
 }
 
@@ -98,6 +105,7 @@ export async function annulerParOrganisation(p: { eventId: string; inscriptionId
 export async function attribuerPlaceMembre(p: { eventId: string; compteId: string }) {
   return withTx(async (tx) => {
     const { evt, membres } = await lockEvent(tx, p.eventId);
+    if (evt.statut !== "PUBLIE") throw new CaisseError("STATUT_INVALIDE");
     if (membres >= evt.placesMembres) throw new CaisseError("PLACES_MEMBRES_EPUISEES");
     const [compte] = await tx.select().from(s.compte).where(and(eq(s.compte.id, p.compteId), eq(s.compte.statut, "ACTIF")));
     if (!compte || (compte.role !== "ETUDIANT" && compte.role !== "EXTERNE")) throw new CaisseError("ETUDIANT_INTROUVABLE");

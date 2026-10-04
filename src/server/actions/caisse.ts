@@ -1,6 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import {
+  evenementComplet,
+  inscriptionAnnuleeParClub,
+  notify,
+  paiementEnregistre,
+  placeMembreAttribuee,
+  promotionListeAttente,
+} from "@/server/email/notifications";
 import { AccessError, requireOrganisation, roleOnEvent } from "@/server/permissions";
 import {
   annulerPaiement,
@@ -49,6 +57,8 @@ export async function payerAction(eventId: string, inscriptionId: string, tarifI
   return wrap(eventId, async () => {
     const { org } = await organiser(eventId);
     const r = await marquerPaye({ eventId, inscriptionId, tarifId, orgId: org.id });
+    notify(() => paiementEnregistre(inscriptionId));
+    if (r.complet) notify(() => evenementComplet(eventId));
     return `${nom} : ${r.tarif} · ${r.montant} DH enregistré.`;
   });
 }
@@ -64,7 +74,9 @@ export async function annulerPaiementAction(eventId: string, inscriptionId: stri
 export async function annulerInscriptionAction(eventId: string, inscriptionId: string, nom: string) {
   return wrap(eventId, async () => {
     const { org, user } = await organiser(eventId);
-    await annulerParOrganisation({ eventId, inscriptionId, orgId: org.id, compteId: user.id });
+    const { promu } = await annulerParOrganisation({ eventId, inscriptionId, orgId: org.id, compteId: user.id });
+    notify(() => inscriptionAnnuleeParClub(inscriptionId));
+    if (promu) notify(() => promotionListeAttente(promu));
     return `Inscription de ${nom} annulée : la place est libérée.`;
   });
 }
@@ -73,6 +85,7 @@ export async function attribuerPlaceAction(eventId: string, compteId: string, no
   return wrap(eventId, async () => {
     await organiser(eventId);
     await attribuerPlaceMembre({ eventId, compteId });
+    notify(() => placeMembreAttribuee(eventId, compteId));
     return `Place membre attribuée à ${nom}.`;
   });
 }

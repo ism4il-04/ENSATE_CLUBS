@@ -8,6 +8,7 @@ export type CheckinResult =
   | { kind: "DEJA_PRESENT"; nom: string; a: Date }
   | { kind: "NON_CONFIRMEE"; nom: string; statut: string }
   | { kind: "BILLET_INVALIDE" }
+  | { kind: "EVENEMENT_ANNULE" }
   | { kind: "CRENEAU_HORS_JOUR" };
 
 /** Check-in d'un billet (jeton du QR) ou d'une inscription (recherche manuelle) — RG-19. */
@@ -19,6 +20,8 @@ export async function checkin(p: { eventId: string; creneauId: string; scannerId
     .where(and(eq(s.creneau.id, p.creneauId), eq(s.creneau.idEvenement, p.eventId)))
     .limit(1);
   if (!creneau) return { kind: "BILLET_INVALIDE" };
+  const [evt] = await db.select({ statut: s.evenement.statut }).from(s.evenement).where(eq(s.evenement.id, p.eventId)).limit(1);
+  if (evt?.statut === "ANNULE") return { kind: "EVENEMENT_ANNULE" };
   const today = utcToZoned(new Date()).date;
   if (utcToZoned(creneau.debut).date !== today && utcToZoned(creneau.fin).date !== today) return { kind: "CRENEAU_HORS_JOUR" };
 

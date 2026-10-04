@@ -12,6 +12,8 @@ const tokenFor = (secret: string, w: number) => createHmac("sha256", secret).upd
 
 export async function ouvrirSession(p: { eventId: string; orgId: string; compteId: string }) {
   const db = getDb();
+  const [evt] = await db.select({ statut: s.evenement.statut }).from(s.evenement).where(eq(s.evenement.id, p.eventId)).limit(1);
+  if (evt?.statut !== "PUBLIE") return null; // pas de stand pour un événement non publié ou annulé
   await db
     .update(s.sessionStand)
     .set({ actif: false })

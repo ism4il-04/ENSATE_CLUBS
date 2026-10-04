@@ -101,3 +101,14 @@ export async function listOrganisations() {
     .where(eq(s.organisation.statut, "ACTIVE"))
     .orderBy(asc(s.organisation.nom));
 }
+
+/** Inscrits actifs d'un événement et de ses activités (pour l'avertissement d'annulation). */
+export async function countInscritsActifs(eventId: string) {
+  const db = getDb();
+  const subs = await db.select({ id: s.evenement.id }).from(s.evenement).where(eq(s.evenement.idParent, eventId));
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)`.mapWith(Number) })
+    .from(s.inscription)
+    .where(and(inArray(s.inscription.idEvenement, [eventId, ...subs.map((x) => x.id)]), inArray(s.inscription.statut, ["CONFIRMEE", "PRE_INSCRITE", "LISTE_ATTENTE"])));
+  return n;
+}

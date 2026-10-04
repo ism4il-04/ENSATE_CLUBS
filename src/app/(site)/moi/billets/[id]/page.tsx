@@ -43,7 +43,8 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
   ]);
 
   const qr = await QRCode.toString(ins.tokenBillet, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0B0C12", light: "#FFFFFF" } });
-  const st = STATUT[ins.statut] ?? STATUT.CONFIRMEE;
+  const annule = evt.statut === "ANNULE";
+  const st = annule ? { label: "Événement annulé", cls: "bg-ink text-danger" } : (STATUT[ins.statut] ?? STATUT.CONFIRMEE);
   const nom = [personne?.prenom, personne?.nom].filter(Boolean).join(" ") || user.email;
   const contact = orgs[0];
   const code = ins.tokenBillet.slice(0, 4).toUpperCase() + "-" + ins.tokenBillet.slice(4, 8).toUpperCase();
@@ -71,7 +72,15 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
         </div>
 
         <div className="flex flex-col items-center gap-3.5 px-5 pt-1.5 pb-5.5">
-          <div className="w-[228px] rounded-[22px] bg-white p-3.5" role="img" aria-label="QR code du billet" dangerouslySetInnerHTML={{ __html: qr }} />
+          {annule ? (
+            <div className="flex w-[228px] flex-col items-center gap-2 rounded-[22px] border-[1.5px] border-dashed border-danger/60 px-4 py-8 text-center">
+              <Icon name="x" size={28} stroke={2.6} className="text-danger" />
+              <span className="font-extrabold">Événement annulé</span>
+              <span className="text-[13px] text-muted">Ce billet n&apos;est plus valable.</span>
+            </div>
+          ) : (
+            <div className="w-[228px] rounded-[22px] bg-white p-3.5" role="img" aria-label="QR code du billet" dangerouslySetInnerHTML={{ __html: qr }} />
+          )}
           <div className="text-center">
             <div className="text-lg font-extrabold">{nom}</div>
             <div className="mt-1 text-[13px] tracking-[0.14em] text-muted tabular-nums">{code}</div>
@@ -111,7 +120,18 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
         })}
       </div>
 
-      {ins.datePaiement ? (
+      {annule ? (
+        <div className="flex gap-3 rounded-[22px] border border-line bg-surface p-4">
+          <Icon name="alert" size={20} className="flex-none text-danger" />
+          <div className="flex flex-col gap-1 text-sm leading-relaxed">
+            <b>L&apos;événement est annulé</b>
+            <span className="text-muted">
+              {ins.datePaiement ? "Pour le remboursement, contacte l'organisation" : "Pour toute question, contacte l'organisation"}
+              {contact ? ` ${contact.nom}${contact.email ? ` (${contact.email})` : ""}${contact.instagram ? ` · ${contact.instagram}` : ""}` : ""}.
+            </span>
+          </div>
+        </div>
+      ) : ins.datePaiement ? (
         <div className="flex gap-3 rounded-[22px] border border-line bg-surface p-4">
           <Icon name="alert" size={20} className="flex-none text-amber" />
           <div className="flex flex-col gap-1 text-sm leading-relaxed">

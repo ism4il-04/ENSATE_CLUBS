@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CreneauxEditor } from "@/components/coord/CreneauxEditor";
+import { AnnulerEvenement } from "@/components/events/AnnulerEvenement";
 import { Icon } from "@/components/ui/Icon";
 import { dayLabel, LIEU_LABEL, timeLabel } from "@/lib/format";
 import { utcToZoned } from "@/lib/dates";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
 import { AccessError } from "@/server/permissions";
-import { getManagedEvent, listLieux } from "@/server/queries/org";
+import { countInscritsActifs, getManagedEvent, listLieux } from "@/server/queries/org";
 
 export const metadata: Metadata = { title: "Événement" };
 
@@ -23,7 +24,8 @@ export default async function CoordEvenement({ params }: PageProps<"/coord/evene
   const { evt } = m;
   const st = STATUT_EVENEMENT[evt.statut];
   const editable = (evt.statut === "VALIDE" || evt.statut === "PUBLIE") && evt.structure !== "PROGRAMME";
-  const lieux = editable ? await listLieux() : [];
+  const annulable = evt.structure !== "SOUS_EVENEMENT" && !["ANNULE", "TERMINE", "REFUSE"].includes(evt.statut);
+  const [lieux, inscrits] = await Promise.all([editable ? listLieux() : [], annulable ? countInscritsActifs(evt.id) : 0]);
 
   return (
     <>
@@ -84,6 +86,7 @@ export default async function CoordEvenement({ params }: PageProps<"/coord/evene
           )}
         </aside>
       </div>
+      {annulable && <AnnulerEvenement eventId={evt.id} titre={evt.titre} inscrits={inscrits} />}
     </>
   );
 }

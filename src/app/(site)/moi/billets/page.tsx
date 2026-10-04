@@ -42,7 +42,7 @@ export default async function MesBillets({ searchParams }: PageProps<"/moi/bille
 
       {list.map(({ ins, evt, debut, fin }, i) => {
         const st = debut ? dateStamp(debut) : null;
-        const b = BADGE[ins.statut] ?? BADGE.CONFIRMEE;
+        const b = evt.statut === "ANNULE" ? { label: "Événement annulé", cls: "bg-danger/15 text-danger" } : (BADGE[ins.statut] ?? BADGE.CONFIRMEE);
         return (
           <Link
             key={ins.id}
@@ -59,7 +59,7 @@ export default async function MesBillets({ searchParams }: PageProps<"/moi/bille
               <span className="text-[13px] text-muted">{debut && fin ? rangeLabel(debut, fin) : ""}</span>
               <span className={`flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-xs font-extrabold ${b.cls}`}>
                 <span className="size-1.5 rounded-full bg-current" />
-                {ins.datePaiement ? `${b.label} · payé` : b.label}
+                {ins.datePaiement && evt.statut !== "ANNULE" ? `${b.label} · payé` : b.label}
               </span>
             </span>
           </Link>

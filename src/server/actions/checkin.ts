@@ -9,6 +9,7 @@ export type CheckinView =
   | { kind: "NON_CONFIRMEE"; nom: string; statut: string }
   | { kind: "BILLET_INVALIDE" }
   | { kind: "CRENEAU_HORS_JOUR" }
+  | { kind: "EVENEMENT_ANNULE" }
   | { kind: "ACCES_REFUSE" };
 
 /** Le QR du billet contient uniquement le jeton (RG-20). Organisation principale ou partenaire. */

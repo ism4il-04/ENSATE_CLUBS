@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { and, asc, eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
+import { AnnulerEvenement } from "@/components/events/AnnulerEvenement";
 import { EventHeader } from "@/components/org/EventHeader";
 import { PublicationForm } from "@/components/org/PublicationForm";
 import { CATEGORIES, LIEU_LABEL, dayLabel, timeLabel, type CategorieKey } from "@/lib/format";
 import { AccessError, requireOrganisation } from "@/server/permissions";
 import { getDb, schema as s } from "@/server/db";
-import { getManagedEvent } from "@/server/queries/org";
+import { countInscritsActifs, getManagedEvent } from "@/server/queries/org";
 import { uploadsEnabled } from "@/server/uploads";
 
 export const metadata: Metadata = { title: "Publication" };
@@ -25,6 +26,7 @@ export default async function Publication({ params }: PageProps<"/org/evenements
   if (!m.isPrincipal) redirect(`/org/evenements/${id}/inscrits`);
   if (evt.statut !== "VALIDE" && evt.statut !== "PUBLIE") redirect("/org");
 
+  const inscrits = await countInscritsActifs(evt.id);
   const plannings = await getDb()
     .select({ url: s.media.url })
     .from(s.media)
@@ -76,6 +78,7 @@ export default async function Publication({ params }: PageProps<"/org/evenements
           listeAttenteActive: evt.listeAttenteActive,
         }}
       />
+      <AnnulerEvenement eventId={evt.id} titre={evt.titre} inscrits={inscrits} />
     </>
   );
 }

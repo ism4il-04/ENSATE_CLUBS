@@ -146,7 +146,7 @@ export async function annulerParEtudiant(compteId: string, inscriptionId: string
           .limit(1);
         if (next) {
           await tx.update(s.inscription).set({ statut: "CONFIRMEE" }).where(eq(s.inscription.id, next.id));
-          promu = next.id; // TODO V2 : notifier l'étudiant promu (email / notification)
+          promu = next.id;
         }
       }
     }

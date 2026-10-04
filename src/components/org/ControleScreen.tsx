@@ -13,6 +13,7 @@ const VIEW: Record<CheckinView["kind"], { bg: string; title: string; icon: "chec
   DEJA_PRESENT: { bg: "bg-amber", title: "Déjà scanné", icon: "alert" },
   NON_CONFIRMEE: { bg: "bg-danger", title: "Non confirmé", icon: "x" },
   BILLET_INVALIDE: { bg: "bg-danger", title: "Billet invalide", icon: "x" },
+  EVENEMENT_ANNULE: { bg: "bg-danger", title: "Événement annulé", icon: "x" },
   CRENEAU_HORS_JOUR: { bg: "bg-danger", title: "Pas aujourd'hui", icon: "x" },
   ACCES_REFUSE: { bg: "bg-danger", title: "Accès refusé", icon: "x" },
 };
@@ -29,6 +30,8 @@ function detail(r: CheckinView) {
       return "Ce billet ne correspond pas à cet événement.";
     case "CRENEAU_HORS_JOUR":
       return "Ce créneau n'a pas lieu aujourd'hui.";
+    case "EVENEMENT_ANNULE":
+      return "Cet événement a été annulé : aucune entrée n'est validée.";
     default:
       return "";
   }

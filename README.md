@@ -29,11 +29,27 @@ Dans [Google Cloud Console](https://console.cloud.google.com/) → *API et servi
 
 Crée un compte gratuit sur [cloudinary.com](https://cloudinary.com) et copie *Cloud name*, *API Key* et *API Secret* dans `.env.local` (`CLOUDINARY_*`). Les clubs peuvent alors envoyer affiche, photos du planning et logo depuis leur téléphone ou leur PC ; les images sont redimensionnées et converties automatiquement. Sans ces valeurs, ils collent un lien https vers l'image.
 
-### 4. Variables d'environnement
+### 4. Emails (facultatif en local)
+
+Crée un compte sur [resend.com](https://resend.com), vérifie le domaine d'envoi, puis renseigne `RESEND_API_KEY` et `EMAIL_FROM` dans `.env.local`. Sans clé, chaque email est seulement affiché dans le terminal de `npm run dev` (destinataire masqué et sujet).
+
+Emails envoyés :
+- **demande soumise** : au coordinateur ;
+- **partenaires ajoutés** : aux partenaires ;
+- **décision** : au club ;
+- **inscription** : confirmation, pré-inscription ou liste d'attente ;
+- **paiement reçu** et **place membre attribuée** ;
+- **place libérée** : depuis la liste d'attente ;
+- **événement complet** : aux pré-inscrits ;
+- **créneaux modifiés** et **événement annulé**.
+
+Ils partent après la réponse (`after()`) : un échec d'envoi n'annule jamais l'action.
+
+### 5. Variables d'environnement
 
 `.env.local` a été créé avec un `AUTH_SECRET` aléatoire. Complète les autres valeurs (voir `.env.example`), dont `ADMIN_EMAIL` : l'adresse Google du premier administrateur. Ne colle jamais ces valeurs dans un chat ou un ticket.
 
-### 5. Lancer
+### 6. Lancer
 
 ```bash
 npm install
@@ -78,7 +94,9 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 
 Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG).
 
-À venir : emails de notification, trésorerie privée (V2), routes `/api/v1` pour une future application mobile.
+Emails : `src/server/email` (gabarits HTML + texte, envoi groupé via Resend). Annulation d'un événement par le club principal ou le coordinateur : billets invalidés, stand fermé, inscrits prévenus.
+
+À venir : trésorerie privée (V2), routes `/api/v1` pour une future application mobile.
 
 > La caméra (contrôle d'entrée) exige HTTPS ou `localhost` : pour tester sur un téléphone, passe par un déploiement Vercel.
 
