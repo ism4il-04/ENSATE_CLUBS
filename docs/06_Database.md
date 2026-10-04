@@ -40,7 +40,7 @@
 - *(V2, en place)* **SUIVI_ORGANISATION** (**#id_compte, #id_organisation**, notifications_actives, date_suivi)
 - *(V2)* **NOTIFICATION** (**id_notification**, type, titre, message, lien, lu, date_creation, #id_compte)
 - *(V2, en place)* **ANNONCE** (**id_annonce**, titre, contenu, cible, destinataires, date_publication, #id_evenement, #id_organisation, #id_auteur)
-- *(V2)* **PERIODE_BLOQUEE** (**id_periode**, libelle, debut, fin, motif, #id_createur → COMPTE)
+- *(V2, en place)* **PERIODE_BLOQUEE** (**id_periode**, libelle, debut, fin, motif, date_creation, #id_createur → COMPTE) — un club ne peut pas soumettre de créneau dedans ; le coordinateur est seulement averti
 - *(V3)* **FEEDBACK** (**#id_inscription**, note, commentaire, date_feedback)
 
 > Retirés du périmètre : recrutement (`CAMPAGNE_RECRUTEMENT`, `CANDIDATURE_ORGANISATION`) et filières (`FILIERE`).

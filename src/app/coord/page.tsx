@@ -6,6 +6,8 @@ import { Icon } from "@/components/ui/Icon";
 import { CATEGORIES, dateStamp, dayLabel, timeLabel, type CategorieKey } from "@/lib/format";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
 import { listDemandes, sameDay } from "@/server/services/coord";
+import { periodeDe, periodesActives } from "@/server/services/periodes";
+import { utcToZoned } from "@/lib/dates";
 import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Demandes en attente" };
@@ -17,7 +19,8 @@ export default async function Demandes({ searchParams }: PageProps<"/coord">) {
   const demandes = await listDemandes();
   const wanted = (await searchParams).id;
   const sel = demandes.find((d) => d.evt.id === wanted) ?? demandes[0] ?? null;
-  const memeJour = sel ? await sameDay(sel.creneaux) : [];
+  const [memeJour, periodes] = sel ? await Promise.all([sameDay(sel.creneaux), periodesActives()]) : [[], []];
+  const bloques = sel ? [...new Set(sel.creneaux.map((c) => periodeDe(utcToZoned(c.debut).date, periodes)?.libelle).filter(Boolean))] : [];
   const next = demandes.find((d) => d.evt.id !== sel?.evt.id);
 
   return (
@@ -117,6 +120,12 @@ export default async function Demandes({ searchParams }: PageProps<"/coord">) {
                 );
               })}
             </div>
+
+            {bloques.length > 0 && (
+              <div role="alert" className="rounded-2xl border border-amber/40 bg-amber/10 px-4 py-3 text-sm font-bold text-amber">
+                Attention : créneau pendant une période bloquée ({bloques.join(", ")}).
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <h3 className="text-[13px] font-extrabold tracking-widest text-muted uppercase">Le même jour</h3>

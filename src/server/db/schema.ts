@@ -319,3 +319,18 @@ export const transaction = pgTable(
   },
   (t) => [check("transaction_montant_chk", sql`${t.montant} > 0`), index("transaction_org_date_idx").on(t.idOrganisation, t.dateOperation)],
 );
+
+/** Périodes bloquées par le coordinateur (BF-67) : examens, vacances. Un club ne peut pas y soumettre de créneau. */
+export const periodeBloquee = pgTable(
+  "periode_bloquee",
+  {
+    id: uuid("id_periode").primaryKey().defaultRandom(),
+    libelle: text("libelle").notNull(),
+    debut: date("debut").notNull(),
+    fin: date("fin").notNull(),
+    motif: text("motif"),
+    dateCreation: ts("date_creation").notNull().defaultNow(),
+    idCreateur: uuid("id_createur").notNull().references(() => compte.id),
+  },
+  (t) => [check("periode_dates_chk", sql`${t.debut} <= ${t.fin}`), index("periode_fin_idx").on(t.fin)],
+);

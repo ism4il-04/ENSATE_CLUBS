@@ -17,6 +17,7 @@ export default async function CoordLayout({ children }: LayoutProps<"/coord">) {
         { href: "/coord/evenements", label: "Événements", icon: "home" },
         { href: "/coord/organisations", label: "Organisations", icon: "users" },
         { href: "/coord/lieux", label: "Lieux", icon: "pin" },
+        { href: "/coord/periodes", label: "Périodes bloquées", icon: "lock" },
         { href: "/coord/statistiques", label: "Statistiques", icon: "globe" },
         ...(user.role === "ADMIN" ? [{ href: "/admin", label: "Comptes (admin)", icon: "lock" as const }] : []),
       ]}

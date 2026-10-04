@@ -12,6 +12,7 @@ import {
   setOrganisationStatut,
   updateOrganisation,
 } from "@/server/services/admin";
+import { creerPeriode, PeriodeError, supprimerPeriode } from "@/server/services/periodes";
 
 export type AdminResult = { ok: boolean; message: string; at: number } | null;
 
@@ -21,7 +22,7 @@ async function wrap(path: string, fn: () => Promise<string>): Promise<AdminResul
     revalidatePath(path);
     return { ok: true, message, at: Date.now() };
   } catch (e) {
-    if (e instanceof AdminError) return { ok: false, message: e.message, at: Date.now() };
+    if (e instanceof AdminError || e instanceof PeriodeError) return { ok: false, message: e.message, at: Date.now() };
     if (e instanceof AccessError) return { ok: false, message: "Accès refusé.", at: Date.now() };
     console.error(e);
     return { ok: false, message: "Une erreur est survenue. Réessaie.", at: Date.now() };
@@ -94,5 +95,22 @@ export async function compteStatutAction(id: string, actif: boolean) {
     const user = await requireRole("ADMIN");
     const email = await setCompteStatut(id, actif, user.id);
     return actif ? `${email} réactivé.` : `${email} suspendu : il ne peut plus se connecter.`;
+  });
+}
+
+// Périodes bloquées (BF-67) : coordinateur ou admin.
+export async function creerPeriodeAction(_prev: AdminResult, fd: FormData) {
+  return wrap("/coord/periodes", async () => {
+    const user = await requireRole("COORDINATEUR", "ADMIN");
+    const nom = await creerPeriode({ libelle: String(fd.get("libelle") ?? ""), debut: String(fd.get("debut") ?? ""), fin: String(fd.get("fin") ?? ""), motif: String(fd.get("motif") ?? "") }, user.id);
+    return `Période « ${nom} » bloquée : les clubs ne pourront plus y soumettre de créneau.`;
+  });
+}
+
+export async function supprimerPeriodeAction(id: string) {
+  return wrap("/coord/periodes", async () => {
+    await requireRole("COORDINATEUR", "ADMIN");
+    const nom = await supprimerPeriode(String(id));
+    return `Période « ${nom} » supprimée.`;
   });
 }

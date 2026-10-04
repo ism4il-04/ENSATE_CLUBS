@@ -124,7 +124,7 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 | --- | --- |
 | Public / étudiant | `/` accueil · `/evenements/[slug]` fiche (et programme, export agenda `.ics`) · `/clubs` · `/clubs/[slug]` (suivre un club) · `/connexion` · `/moi/billets` · `/moi/billets/[id]` (QR, hors ligne, annonces) · `/moi/profil` (clubs suivis, organisme des externes) · `/stand/[session]` (inscription au stand) |
 | Club (`/org`) | Mes événements · assistant de demande · publication (tarifs affichés / masqués, externes, places, affiche et planning) · inscrits et encaissement (recherche par nom ou scan du billet) · export CSV · stand (QR dynamique, caisse) · contrôle d'entrée (caméra) · annulation · annonces aux inscrits · **trésorerie privée** (recettes, dépenses, justificatifs, billetterie, export) · profil |
-| Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · compléter et publier à la place d'un club · calendrier · tous les événements · modification des créneaux · annulation · organisations (création, modification, désactivation) · lieux · statistiques (sans montants) |
+| Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · compléter et publier à la place d'un club · calendrier · tous les événements · modification des créneaux · annulation · organisations (création, modification, désactivation) · lieux · périodes bloquées · statistiques (sans montants) |
 | Admin (`/admin`) | Comptes : création (toute adresse Google), suspension |
 
 Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG).
@@ -133,7 +133,7 @@ Emails : `src/server/email` (gabarits HTML + texte, envoi groupé via Resend). A
 
 Trésorerie (`/org/tresorerie`) : réservée au compte de l'organisation par `requireFinance()` ; coordinateur et admin reçoivent 403. Les justificatifs sont envoyés en Cloudinary `authenticated` et ouverts par un lien de téléchargement signé valable 5 minutes.
 
-À venir : comptes membres et rôles (trésorier, président), périodes bloquées, routes `/api/v1` pour une future application mobile.
+À venir : comptes membres et rôles (trésorier, président), routes `/api/v1` pour une future application mobile.
 
 > La caméra (contrôle d'entrée) exige HTTPS ou `localhost` : pour tester sur un téléphone, passe par un déploiement Vercel.
 

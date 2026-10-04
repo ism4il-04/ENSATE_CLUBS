@@ -5,6 +5,7 @@ import { PageTitle } from "@/components/space/SpaceShell";
 import { AccessError, requireOrganisation } from "@/server/permissions";
 import { getManagedEvent, listLieux, listOrganisations } from "@/server/queries/org";
 import { toWizardInitial } from "@/server/queries/wizard";
+import { periodesActives } from "@/server/services/periodes";
 
 export const metadata: Metadata = { title: "Modifier la demande" };
 
@@ -31,7 +32,7 @@ export default async function ModifierDemande({ params }: PageProps<"/org/evenem
           <span className="text-soft">« {comment} »</span>
         </div>
       )}
-      <DemandeWizard mode="org" lieux={lieux} organisations={organisations} myOrgId={org.id} initial={initial} />
+      <DemandeWizard periodes={await periodesActives()} mode="org" lieux={lieux} organisations={organisations} myOrgId={org.id} initial={initial} />
     </>
   );
 }

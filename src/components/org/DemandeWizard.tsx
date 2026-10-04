@@ -40,12 +40,14 @@ export function DemandeWizard({
   organisations,
   myOrgId,
   initial,
+  periodes = [],
 }: {
   mode: "org" | "coord";
   lieux: Lieu[];
   organisations: Org[];
   myOrgId?: string;
   initial?: WizardInitial;
+  periodes?: { libelle: string; debut: string; fin: string }[];
 }) {
   const coord = mode === "coord";
   const uid = useMemo(() => ({ n: 100 }), []);
@@ -324,6 +326,15 @@ export function DemandeWizard({
                       </label>
                     ))}
                   </div>
+                  {(() => {
+                    const p = x.date ? periodes.find((q) => q.debut <= x.date && x.date <= q.fin) : null;
+                    return p ? (
+                      <span role="alert" className="rounded-xl border border-amber/40 bg-amber/10 px-3 py-2 text-[13px] font-bold text-amber">
+                        Période bloquée : « {p.libelle} » (du {p.debut.split("-").reverse().join("/")} au {p.fin.split("-").reverse().join("/")}).
+                        {coord ? " Tu peux quand même créer l'événement." : " La demande ne pourra pas être soumise à cette date."}
+                      </span>
+                    ) : null;
+                  })()}
                   <div className="flex flex-col gap-2.5">
                     <span className="text-[13px] font-bold text-muted">
                       Lieux <span className="font-semibold">(plusieurs possibles)</span>

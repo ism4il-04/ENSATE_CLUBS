@@ -5,6 +5,7 @@ import { z } from "zod";
 import { schema as s } from "@/server/db";
 import { withTx, type Tx } from "@/server/db/tx";
 import { slugify, zonedToUtc } from "@/lib/dates";
+import { periodeDe, periodesEntre } from "./periodes";
 
 const Creneau = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date manquante"),
@@ -74,6 +75,20 @@ function check(d: z.infer<typeof DemandeSchema>, autreIds: Set<string>, submit: 
   if (errs.length) throw new DemandeError(errs);
 }
 
+/** BF-67 : un club ne soumet pas de créneau dans une période bloquée (le coordinateur, si). */
+async function checkPeriodes(d: z.infer<typeof DemandeSchema>) {
+  const word = d.structure === "PROGRAMME" ? "Activité" : "Créneau";
+  const list = d.structure === "PROGRAMME" ? d.activites.map((a) => a.creneau) : d.creneaux;
+  if (!list.length) return;
+  const dates = list.map((c) => c.date).sort();
+  const periodes = await periodesEntre(dates[0], dates.at(-1)!);
+  const errs = list.flatMap((c, i) => {
+    const p = periodeDe(c.date, periodes);
+    return p ? [`${word} ${i + 1} : le ${c.date.split("-").reverse().join("/")} tombe pendant « ${p.libelle} » (période bloquée). Choisis une autre date ou contacte le coordinateur.`] : [];
+  });
+  if (errs.length) throw new DemandeError(errs);
+}
+
 /**
  * Crée ou met à jour une demande (BROUILLON / MODIF_DEMANDEE), puis la soumet si `submit`.
  * Mode coordinateur : l'événement est créé directement VALIDE (RG-27).
@@ -87,6 +102,7 @@ export async function saveDemande(input: DemandeInput, ctx: { compteId: string; 
     const autres = await tx.select({ id: s.lieu.id }).from(s.lieu).where(eq(s.lieu.code, "AUTRE"));
     const autreIds = new Set(autres.map((a) => a.id));
     check(d, autreIds, ctx.submit);
+    if (ctx.submit && !ctx.coordinateur) await checkPeriodes(d);
 
     const principal = ctx.coordinateur ? d.idOrganisationPrincipale : ctx.orgId;
     if (!principal) throw new DemandeError(["Choisis l'organisation principale."]);
