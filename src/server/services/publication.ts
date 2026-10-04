@@ -12,6 +12,10 @@ export const PublicationSchema = z.object({
     .max(500)
     .refine((v) => v === "" || /^https:\/\/\S+$/.test(v), "L'adresse de l'affiche doit commencer par https://")
     .default(""),
+  plannings: z
+    .array(z.string().trim().max(500).regex(/^https:\/\/\S+$/, "Chaque photo du planning doit être un lien https://"))
+    .max(6, "6 photos de planning au maximum.")
+    .default([]),
   capacite: z.number().int().positive().nullable(),
   placesMembres: z.number().int().min(0).default(0),
   gratuit: z.boolean(),
@@ -91,6 +95,11 @@ export async function savePublication(eventId: string, input: PublicationInput, 
             },
       )
       .where(eq(s.evenement.id, eventId));
+
+    // Planning : remplacé en bloc, dans l'ordre choisi.
+    await tx.delete(s.media).where(and(eq(s.media.idEvenement, eventId), eq(s.media.type, "PLANNING")));
+    if (d.plannings.length)
+      await tx.insert(s.media).values(d.plannings.map((url, i) => ({ idEvenement: eventId, type: "PLANNING" as const, url, ordre: i, texteAlternatif: `Planning ${i + 1}` })));
 
     if (!isProgramme) {
       // Tarifs : un tarif déjà utilisé par une inscription payée ne peut qu'être masqué.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { imageUrl } from "@/lib/images";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
@@ -40,7 +41,7 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
             <span className="relative grid size-32 place-items-center overflow-hidden rounded-[34px] border-[6px] border-ink bg-ink font-display text-5xl font-extrabold tracking-tight shadow-[0_0_0_2px_#2b2e40]" style={{ color: org.couleur }}>
               {org.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={org.logoUrl} alt={`Logo ${org.nom}`} className="size-full object-cover" />
+                <img src={imageUrl(org.logoUrl, 200)} alt={`Logo ${org.nom}`} className="size-full object-cover" />
               ) : (
                 initials
               )}

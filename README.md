@@ -25,11 +25,15 @@ Dans [Google Cloud Console](https://console.cloud.google.com/) → *API et servi
 
 > ⚠️ Teste tôt avec un **vrai compte `@etu.uae.ac.ma`** : l'université peut bloquer les applications tierces.
 
-### 3. Variables d'environnement
+### 3. Images (facultatif)
+
+Crée un compte gratuit sur [cloudinary.com](https://cloudinary.com) et copie *Cloud name*, *API Key* et *API Secret* dans `.env.local` (`CLOUDINARY_*`). Les clubs peuvent alors envoyer affiche, photos du planning et logo depuis leur téléphone ou leur PC ; les images sont redimensionnées et converties automatiquement. Sans ces valeurs, ils collent un lien https vers l'image.
+
+### 4. Variables d'environnement
 
 `.env.local` a été créé avec un `AUTH_SECRET` aléatoire. Complète les autres valeurs (voir `.env.example`), dont `ADMIN_EMAIL` : l'adresse Google du premier administrateur. Ne colle jamais ces valeurs dans un chat ou un ticket.
 
-### 4. Lancer
+### 5. Lancer
 
 ```bash
 npm install
@@ -72,7 +76,9 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 | Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · calendrier · tous les événements · modification des créneaux · organisations · lieux · statistiques (sans montants) |
 | Admin (`/admin`) | Comptes : création (toute adresse Google), suspension |
 
-À venir : envoi direct des affiches (Cloudinary), emails de notification, trésorerie privée (V2), routes `/api/v1` pour une future application mobile.
+Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG).
+
+À venir : emails de notification, trésorerie privée (V2), routes `/api/v1` pour une future application mobile.
 
 > La caméra (contrôle d'entrée) exige HTTPS ou `localhost` : pour tester sur un téléphone, passe par un déploiement Vercel.
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { imageUrl } from "@/lib/images";
 import { updateOrgProfil, type OrgProfilState } from "@/server/actions/orgProfil";
 
 const COULEURS = ["#C6F24E", "#7CC8FF", "#FFB547", "#FF8CC6", "#B79CFF", "#FF8A65"];
@@ -19,11 +21,12 @@ type Org = {
   logoUrl: string | null;
 };
 
-export function OrgProfilForm({ org }: { org: Org }) {
+export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) {
   const [state, action, pending] = useActionState<OrgProfilState, FormData>(updateOrgProfil, null);
   const [couleur, setCouleur] = useState(org.couleur);
   const [sigle, setSigle] = useState(org.sigle ?? "");
   const [desc, setDesc] = useState(org.description ?? "");
+  const [logo, setLogo] = useState(org.logoUrl ?? "");
 
   return (
     <div className="flex flex-wrap items-start gap-5">
@@ -50,10 +53,7 @@ export function OrgProfilForm({ org }: { org: Org }) {
               ))}
             </div>
           </fieldset>
-          <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
-            Logo (lien https vers l&apos;image)
-            <input name="logoUrl" defaultValue={org.logoUrl ?? ""} placeholder="https://…" className={input} />
-          </label>
+          <ImageUpload folder="ensate-clubs/logos" enabled={uploads} value={logo} onChange={setLogo} name="logoUrl" label="Logo" hint="Image carrée de préférence." />
         </section>
         <section className="flex flex-col gap-3.5 rounded-3xl border border-line bg-surface p-5">
           <h2 className="text-[17px] font-extrabold">
@@ -90,6 +90,10 @@ export function OrgProfilForm({ org }: { org: Org }) {
         <div className="overflow-hidden rounded-[26px] border border-line bg-surface">
           <div className="relative h-32 overflow-hidden" style={{ background: couleur }}>
             <span className="absolute -right-3 -bottom-8 font-display text-[110px] leading-none font-extrabold tracking-[-0.06em] text-ink">{(sigle || org.nom.slice(0, 2)).toUpperCase()}</span>
+            {logo.startsWith("https://") && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl(logo, 160)} alt="" className="absolute top-4 left-4 size-14 rounded-2xl border-2 border-ink object-cover" />
+            )}
           </div>
           <div className="flex flex-col gap-2 p-4.5">
             <span className="font-display text-2xl font-extrabold tracking-tight">{org.nom}</span>

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { and, asc, eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import { EventHeader } from "@/components/org/EventHeader";
 import { PublicationForm } from "@/components/org/PublicationForm";
 import { CATEGORIES, LIEU_LABEL, dayLabel, timeLabel, type CategorieKey } from "@/lib/format";
 import { AccessError, requireOrganisation } from "@/server/permissions";
+import { getDb, schema as s } from "@/server/db";
 import { getManagedEvent } from "@/server/queries/org";
+import { uploadsEnabled } from "@/server/uploads";
 
 export const metadata: Metadata = { title: "Publication" };
 
@@ -21,6 +24,12 @@ export default async function Publication({ params }: PageProps<"/org/evenements
   const { evt } = m;
   if (!m.isPrincipal) redirect(`/org/evenements/${id}/inscrits`);
   if (evt.statut !== "VALIDE" && evt.statut !== "PUBLIE") redirect("/org");
+
+  const plannings = await getDb()
+    .select({ url: s.media.url })
+    .from(s.media)
+    .where(and(eq(s.media.idEvenement, evt.id), eq(s.media.type, "PLANNING")))
+    .orderBy(asc(s.media.ordre));
 
   const creneauxLabel = m.creneaux.length
     ? m.creneaux
@@ -50,10 +59,12 @@ export default async function Publication({ params }: PageProps<"/org/evenements
         categorie={CATEGORIES[evt.categorie as CategorieKey]}
         dateLabel={m.creneaux[0] ? `${dayLabel(m.creneaux[0].debut)} · ${timeLabel(m.creneaux[0].debut)}` : ""}
         creneauxLabel={creneauxLabel}
+        uploads={uploadsEnabled()}
         activites={m.sousEvenements.map((x) => ({ id: x.id, titre: x.titre, statut: x.statut }))}
         initial={{
           description: evt.description ?? "",
           afficheUrl: evt.afficheUrl ?? "",
+          plannings: plannings.map((p) => p.url),
           capacite: evt.capacite,
           placesMembres: evt.placesMembres,
           gratuit: evt.gratuit,

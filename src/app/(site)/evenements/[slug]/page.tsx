@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { imageUrl } from "@/lib/images";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InscriptionPanel } from "@/components/events/InscriptionPanel";
@@ -38,7 +39,7 @@ export default async function EvenementPage({ params }: PageProps<"/evenements/[
         >
           {e.afficheUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={e.afficheUrl} alt={`Affiche : ${e.titre}`} className="absolute inset-0 size-full object-cover" />
+            <img src={imageUrl(e.afficheUrl, 1200)} alt={`Affiche : ${e.titre}`} className="absolute inset-0 size-full object-cover" />
           )}
           <span aria-hidden className="absolute -right-16 bottom-8 size-56 rotate-12 rounded-[64px] bg-white/20" />
           <div className="relative flex flex-wrap gap-2">
@@ -202,8 +203,10 @@ export default async function EvenementPage({ params }: PageProps<"/evenements/[
           <h2 className="text-[13px] font-extrabold tracking-widest text-muted uppercase">Planning</h2>
           <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]">
             {plannings.map((m) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={m.id} src={m.url} alt={m.texteAlternatif ?? "Planning"} className="w-full rounded-[22px] border border-line" />
+              <a key={m.id} href={m.url} target="_blank" rel="noopener noreferrer" className="lift block" aria-label={`${m.texteAlternatif ?? "Planning"} (plein écran)`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageUrl(m.url, 1000)} alt={m.texteAlternatif ?? "Planning"} loading="lazy" className="w-full rounded-[22px] border border-line" />
+              </a>
             ))}
           </div>
         </section>

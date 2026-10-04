@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imageUrl } from "@/lib/images";
 import { Icon } from "@/components/ui/Icon";
 import { CATEGORIES, dateStamp, rangeLabel, type CategorieKey } from "@/lib/format";
 import type { EventCard as EventCardData } from "@/server/queries/evenements";
@@ -38,7 +39,7 @@ export function EventCard({ e, index = 0 }: { e: EventCardData; index?: number }
         <div className="group relative flex h-[212px] flex-col justify-between overflow-hidden p-4.5 text-ink" style={{ background: e.couleur }}>
           {e.afficheUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={e.afficheUrl} alt="" className="absolute inset-0 size-full object-cover" />
+            <img src={imageUrl(e.afficheUrl, 640)} alt="" className="absolute inset-0 size-full object-cover" />
           )}
           <span aria-hidden className="absolute -top-12 -right-12 size-44 rounded-full border-[22px] border-ink/10" />
           <div className="relative flex flex-wrap gap-1.5">

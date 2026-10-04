@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { ImageListUpload, ImageUpload } from "@/components/ui/ImageUpload";
+import { imageUrl } from "@/lib/images";
 import { enregistrerPublication } from "@/server/actions/publication";
 import type { PublicationInput } from "@/server/services/publication";
 
@@ -11,6 +13,7 @@ type Tarif = { key: number; id?: string; libelle: string; prix: string; affiche:
 export type PublicationInitial = {
   description: string;
   afficheUrl: string;
+  plannings: string[];
   capacite: number | null;
   placesMembres: number;
   gratuit: boolean;
@@ -64,6 +67,7 @@ export function PublicationForm({
   creneauxLabel,
   initial,
   activites,
+  uploads,
 }: {
   eventId: string;
   slug: string;
@@ -76,10 +80,12 @@ export function PublicationForm({
   creneauxLabel: string;
   initial: PublicationInitial;
   activites: { id: string; titre: string; statut: string }[];
+  uploads: boolean;
 }) {
   const keys = useMemo(() => ({ n: 100 }), []);
   const [desc, setDesc] = useState(initial.description);
   const [affiche, setAffiche] = useState(initial.afficheUrl);
+  const [plannings, setPlannings] = useState(initial.plannings);
   const [cap, setCap] = useState(initial.capacite === null ? "" : String(initial.capacite));
   const [membres, setMembres] = useState(initial.placesMembres);
   const [gratuit, setGratuit] = useState(initial.gratuit);
@@ -105,6 +111,7 @@ export function PublicationForm({
     const input: PublicationInput = {
       description: desc,
       afficheUrl: affiche,
+      plannings,
       capacite: capNum,
       placesMembres: Math.min(membres, capNum ?? membres),
       gratuit,
@@ -157,11 +164,27 @@ export function PublicationForm({
             placeholder="Programme, intervenants, public visé, ce qu'il faut apporter…"
             className="resize-y rounded-2xl border-[1.5px] border-line-strong bg-ink px-4 py-3.5 leading-relaxed font-medium outline-none focus:border-accent"
           />
-          <label className="mt-1 flex flex-col gap-1.5 text-[13px] font-bold text-muted">
-            Affiche (lien https vers l&apos;image)
-            <input value={affiche} onChange={(e) => setAffiche(e.target.value)} placeholder="https://…" className={field} />
-            <span className="font-medium text-faint">L&apos;envoi direct d&apos;images arrive bientôt. Sans affiche, la couleur de l&apos;événement est utilisée.</span>
-          </label>
+        </section>
+
+        <section className="flex flex-col gap-5 rounded-3xl border border-line bg-surface p-5">
+          <h2 className="text-[17px] font-extrabold">Visuels</h2>
+          <ImageUpload
+            folder="ensate-clubs/affiches"
+            enabled={uploads}
+            value={affiche}
+            onChange={setAffiche}
+            label="Affiche"
+            hint="Format portrait ou carré, 10 Mo maximum. Sans affiche, la couleur de l'événement est utilisée."
+          />
+          <ImageListUpload
+            folder="ensate-clubs/plannings"
+            enabled={uploads}
+            value={plannings}
+            onChange={setPlannings}
+            max={6}
+            label="Planning (photos)"
+            hint="Affichées dans l'ordre sur la page de l'événement."
+          />
         </section>
 
         {!isProgramme && (
@@ -345,7 +368,7 @@ export function PublicationForm({
           <div className="relative flex h-[220px] flex-col justify-between overflow-hidden p-4.5 text-ink" style={{ background: couleur }}>
             {affiche.startsWith("https://") && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={affiche} alt="" className="absolute inset-0 size-full object-cover" />
+              <img src={imageUrl(affiche, 800)} alt="" className="absolute inset-0 size-full object-cover" />
             )}
             <span className="relative self-start rounded-full bg-ink px-3 py-1.5 text-[11px] font-extrabold tracking-wider text-paper uppercase">{categorie}</span>
             <span className="relative font-display text-3xl leading-[0.88] font-extrabold tracking-tight uppercase">{titre}</span>

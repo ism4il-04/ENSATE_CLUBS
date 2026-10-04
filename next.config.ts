@@ -10,7 +10,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:", // affiches et photos Google (https)
   "font-src 'self' data:",
-  `connect-src 'self'${dev ? " ws: wss:" : ""}`,
+  `connect-src 'self' https://api.cloudinary.com${dev ? " ws: wss:" : ""}`,
   "media-src 'self' blob:", // caméra du contrôle d'entrée
   "worker-src 'self'",
   "manifest-src 'self'",
