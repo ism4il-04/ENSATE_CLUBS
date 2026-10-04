@@ -187,9 +187,9 @@ Le même verrou s'applique aux inscriptions gratuites, à la promotion depuis la
 
 | Fréquence | Tâche |
 | --- | --- |
-| Toutes les heures | `PUBLIE` → `TERMINE` quand le dernier créneau est passé |
+| Chaque nuit (3 h UTC) | `PUBLIE` → `TERMINE` quand le dernier créneau est passé (plan gratuit Vercel : un cron par jour ; les listes masquent déjà les événements passés en temps réel) |
 | Tous les jours à 18h | Rappel par email aux inscrits confirmés pour les événements du lendemain *(V2)* |
-| Toutes les 15 min | Fermeture des sessions stand expirées |
+| Chaque nuit (même tâche) | Fermeture des sessions stand expirées (le jeton d'un stand expiré est de toute façon refusé immédiatement) |
 
 ---
 

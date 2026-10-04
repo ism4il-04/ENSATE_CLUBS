@@ -2,7 +2,8 @@
 // Usage : npm run db:seed            → lieux + admin
 //         npm run db:seed -- --demo  → + organisations et événements fictifs (base de dev uniquement)
 // Le script n'efface rien : il ajoute seulement ce qui manque.
-import { config } from "dotenv";
+import { readFileSync } from "node:fs";
+import { config, parse } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { randomBytes } from "node:crypto";
@@ -16,6 +17,15 @@ async function main() {
   if (!url) throw new Error("DATABASE_URL manquant dans .env.local");
   const db = drizzle(neon(url), { schema: s });
   const demo = process.argv.includes("--demo");
+  // Les données de démo (comptes fictifs, dont un admin) ne vont jamais ailleurs que dans la base de .env.local :
+  // une base passée en variable d'environnement (production) est refusée.
+  if (demo) {
+    let local: string | undefined;
+    try {
+      local = parse(readFileSync(".env.local")).DATABASE_URL;
+    } catch {}
+    if (!local || local !== url) throw new Error("--demo n'est autorisé que sur la base de développement de .env.local.");
+  }
   console.log(`Base cible : ${new URL(url).host}${demo ? " (avec démo)" : ""}`);
 
   // ---- Lieux (docs/06 §7)

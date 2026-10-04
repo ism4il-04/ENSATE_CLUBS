@@ -64,6 +64,41 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 
 > Après un `npm run build`, supprime `.next` avant de relancer `npm run dev` (cache de build partagé).
 
+## Déploiement (Vercel)
+
+À faire une seule fois, dans cet ordre :
+
+1. **GitHub** : pousse la branche `main` sur ton dépôt (privé de préférence). Le travail continue sur `dev` ; chaque fusion dans `main` redéploie le site.
+2. **Base de production** : dans Neon, la branche `main` du projet sert à la production. Applique le schéma, puis crée les lieux et le compte admin. Mets la chaîne de connexion **seulement** dans la commande, jamais dans `.env.local` :
+   ```bash
+   DATABASE_URL="<chaîne pooled de la branche main>" npx drizzle-kit push
+   DATABASE_URL="<chaîne pooled de la branche main>" ADMIN_EMAIL="<ton adresse Google>" npm run db:seed
+   ```
+   Le seed refuse `--demo` sur une autre base que celle de `.env.local` : aucune donnée fictive ne peut arriver en production.
+3. **Vercel** : *Add New → Project*, importe le dépôt et garde le framework Next.js détecté. Ajoute les variables d'environnement (*Production*) :
+
+   | Variable | Valeur |
+   | --- | --- |
+   | `DATABASE_URL` | chaîne **pooled** de la branche `main` de Neon |
+   | `AUTH_SECRET` | nouveau secret, différent de celui de développement : `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`, à coller directement dans Vercel |
+   | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | client OAuth Google |
+   | `CRON_SECRET` | nouveau secret aléatoire (la tâche planifiée l'envoie automatiquement) |
+   | `RESEND_API_KEY`, `EMAIL_FROM` | emails (domaine vérifié chez Resend) |
+   | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | envoi d'images (facultatif) |
+   | `APP_URL` | adresse publique, ex. `https://clubs.ensate.ma` (sinon l'adresse Vercel de production) |
+
+   **Ne jamais** définir `AUTH_DEV_LOGIN` sur Vercel. Elle serait de toute façon ignorée en production.
+4. **Google Cloud Console** : ajoute l'URI de redirection `https://<ton domaine>/api/auth/callback/google`, et passe l'écran de consentement en production.
+5. **Domaine** (facultatif) : *Settings → Domains* sur Vercel, puis mets à jour `APP_URL` et l'URI Google.
+6. **Vérifications après déploiement** :
+   - connexion avec un compte `@etu.uae.ac.ma` et avec le compte admin ;
+   - *Settings → Cron Jobs* : la tâche `/api/cron/maintenance` apparaît ;
+   - en-têtes de sécurité présents (`curl -I https://<domaine>`).
+
+> Tâche planifiée (`vercel.json`) : chaque nuit à 3 h UTC, les événements passés deviennent « Terminé » et les stands expirés sont fermés. Le plan gratuit de Vercel limite les crons à un par jour. Les listes publiques masquent déjà les événements passés en temps réel.
+>
+> Hors Vercel (`next start` sur un serveur), ajoute `AUTH_TRUST_HOST=true` (ou `AUTH_URL`), sinon Auth.js refuse l'hôte.
+
 ## Scripts
 
 | Commande | Rôle |
