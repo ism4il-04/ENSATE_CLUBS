@@ -57,23 +57,40 @@ npm run dev                  # http://localhost:3000
 - L'installation sur téléphone exige HTTPS : teste-la sur un déploiement Vercel (ou `next dev --experimental-https`).
 - **Application mobile plus tard** : la logique métier est dans `src/server/services` ; une app (Expo / React Native ou Capacitor) pourra s'appuyer sur des routes `/api/v1` (contrat dans `docs/07_API.md`).
 
+## Ce qui est en place
+
+| Espace | Pages |
+| --- | --- |
+| Public / étudiant | `/` accueil · `/evenements/[slug]` fiche (et programme) · `/clubs` · `/clubs/[slug]` · `/connexion` · `/moi/billets` · `/moi/billets/[id]` (QR, hors ligne) · `/moi/profil` · `/stand/[session]` (inscription au stand) |
+| Club (`/org`) | Mes événements · assistant de demande · publication (tarifs affichés / masqués, externes, places) · inscrits et encaissement · export CSV · stand (QR dynamique, caisse) · contrôle d'entrée (caméra) · profil |
+| Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · calendrier · tous les événements · modification des créneaux · organisations · lieux · statistiques (sans montants) |
+| Admin (`/admin`) | Comptes : création (toute adresse Google), suspension |
+
+À venir : envoi direct des affiches (Cloudinary), emails de notification, trésorerie privée (V2), routes `/api/v1` pour une future application mobile.
+
+> La caméra (contrôle d'entrée) exige HTTPS ou `localhost` : pour tester sur un téléphone, passe par un déploiement Vercel.
+
 ## Organisation du code
 
-```
+```text
 src/
 ├── app/
-│   ├── (site)/           accueil, fiche événement, mes billets, profil
+│   ├── (site)/           accueil, événements, clubs, mes billets, profil
+│   ├── org/              espace club
+│   ├── coord/            espace coordinateur
+│   ├── admin/            comptes
+│   ├── stand/            page d'inscription au stand (étudiant)
 │   ├── connexion/        connexion Google
-│   ├── api/auth/         Auth.js
+│   ├── api/              Auth.js, jeton et entrée du stand
 │   ├── manifest.ts       PWA
 │   └── hors-ligne/       page hors connexion
 ├── auth.ts               Google + règles RG-01 (étudiant / externe / compte créé par le staff)
 ├── proxy.ts              garde de navigation (/moi, /org, /coord, /admin)
-├── components/           UI
-├── lib/                  formats (dates Africa/Casablanca, prix)
+├── components/           UI (site, events, org, coord, space, ui)
+├── lib/                  formats, dates (heure de Tétouan), statuts
 └── server/
     ├── db/               schéma Drizzle, client HTTP, transactions (verrous)
-    ├── services/         règles métier (inscriptions, places, liste d'attente)
+    ├── services/         règles métier : inscriptions, demandes, publication, caisse, stand, contrôle, coordination, admin
     ├── actions/          Server Actions (revérifient toujours les droits)
     ├── queries/          lectures
     └── permissions.ts    requireRole, requireOrganisation, roleOnEvent
