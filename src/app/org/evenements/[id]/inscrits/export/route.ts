@@ -17,11 +17,12 @@ export async function GET(_req: Request, { params }: RouteContext<"/org/evenemen
     const { org } = await requireOrganisation();
     if (!(await roleOnEvent(org.id, id))) throw new AccessError("ACCES_REFUSE");
     const { evt, list, creneaux } = await listInscrits(id, org.id);
-    const header = ["Nom", "Email", "Téléphone", "Source", "Statut", "Tarif", "Montant (DH)", "Encaissé par", ...creneaux.map((_, i) => `Jour ${i + 1}`)];
+    const header = ["Nom", "Email", "Organisme (externes)", "Téléphone", "Source", "Statut", "Tarif", "Montant (DH)", "Encaissé par", ...creneaux.map((_, i) => `Jour ${i + 1}`)];
     const lines = list.map((r) =>
       [
         r.nom,
         r.email,
+        r.organisme ?? "",
         r.telephone ?? "",
         SOURCE[r.source],
         STATUT[r.statut],

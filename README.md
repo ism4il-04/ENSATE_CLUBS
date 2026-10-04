@@ -123,8 +123,8 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 | Espace | Pages |
 | --- | --- |
 | Public / étudiant | `/` accueil · `/evenements/[slug]` fiche (et programme) · `/clubs` · `/clubs/[slug]` · `/connexion` · `/moi/billets` · `/moi/billets/[id]` (QR, hors ligne) · `/moi/profil` · `/stand/[session]` (inscription au stand) |
-| Club (`/org`) | Mes événements · assistant de demande · publication (tarifs affichés / masqués, externes, places) · inscrits et encaissement · export CSV · stand (QR dynamique, caisse) · contrôle d'entrée (caméra) · profil |
-| Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · calendrier · tous les événements · modification des créneaux · organisations · lieux · statistiques (sans montants) |
+| Club (`/org`) | Mes événements · assistant de demande · publication (tarifs affichés / masqués, externes, places, affiche et planning) · inscrits et encaissement (recherche par nom ou scan du billet) · export CSV · stand (QR dynamique, caisse) · contrôle d'entrée (caméra) · annulation · profil |
+| Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · compléter et publier à la place d'un club · calendrier · tous les événements · modification des créneaux · annulation · organisations (création, modification, désactivation) · lieux · statistiques (sans montants) |
 | Admin (`/admin`) | Comptes : création (toute adresse Google), suspension |
 
 Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG).

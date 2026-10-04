@@ -126,6 +126,18 @@ export async function attribuerPlaceMembre(p: { eventId: string; compteId: strin
   });
 }
 
+/** Retrouve l'inscription correspondant au QR d'un billet, uniquement pour cet événement (BF-39). */
+export async function trouverParBillet(eventId: string, token: string) {
+  const t = token.trim().split("/").pop() ?? "";
+  if (!/^[A-Za-z0-9_-]{20,100}$/.test(t)) return null;
+  const [row] = await getDb()
+    .select({ id: s.inscription.id })
+    .from(s.inscription)
+    .where(and(eq(s.inscription.tokenBillet, t), eq(s.inscription.idEvenement, eventId)))
+    .limit(1);
+  return row?.id ?? null;
+}
+
 /** Recherche d'étudiants pour attribuer une place membre (3 caractères minimum, 10 résultats). */
 export async function chercherEtudiants(q: string) {
   const term = q.trim();
@@ -152,7 +164,7 @@ export async function listInscrits(eventId: string, viewerOrgId: string | null) 
   if (!evt) throw new CaisseError("INTROUVABLE");
   const [rows, tarifs, creneaux, orgs] = await Promise.all([
     db
-      .select({ ins: s.inscription, email: s.compte.email, role: s.compte.role, prenom: s.personne.prenom, nom: s.personne.nom, telephone: s.personne.telephone })
+      .select({ ins: s.inscription, email: s.compte.email, role: s.compte.role, prenom: s.personne.prenom, nom: s.personne.nom, telephone: s.personne.telephone, organisme: s.personne.organisme })
       .from(s.inscription)
       .innerJoin(s.compte, eq(s.compte.id, s.inscription.idCompte))
       .leftJoin(s.personne, eq(s.personne.idCompte, s.inscription.idCompte))
@@ -163,13 +175,14 @@ export async function listInscrits(eventId: string, viewerOrgId: string | null) 
     db.select({ id: s.organisation.id, nom: s.organisation.nom }).from(s.organisation),
   ]);
   const presences = rows.length ? await db.select().from(s.presence).where(inArray(s.presence.idInscription, rows.map((r) => r.ins.id))) : [];
-  const list = rows.map(({ ins, email, role, prenom, nom, telephone }) => {
+  const list = rows.map(({ ins, email, role, prenom, nom, telephone, organisme }) => {
     const mine = !!ins.idOrganisationEncaisse && ins.idOrganisationEncaisse === viewerOrgId;
     return {
       id: ins.id,
       nom: [prenom, nom].filter(Boolean).join(" ") || email,
       email,
       externe: role === "EXTERNE",
+      organisme: role === "EXTERNE" ? organisme : null,
       telephone: evt.telephoneRequis ? telephone : null,
       source: ins.source,
       statut: ins.statut,

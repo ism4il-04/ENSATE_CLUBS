@@ -5,7 +5,7 @@ import { updateProfil, type ProfilState } from "@/server/actions/profil";
 
 const NIVEAUX = ["CP1", "CP2", "1A", "2A", "3A"];
 
-export function ProfilForm({ telephone, niveau }: { telephone: string; niveau: string }) {
+export function ProfilForm({ telephone, niveau, organisme, externe }: { telephone: string; niveau: string; organisme: string; externe: boolean }) {
   const [state, action, pending] = useActionState<ProfilState, FormData>(updateProfil, null);
   const [lvl, setLvl] = useState(niveau);
 
@@ -28,26 +28,44 @@ export function ProfilForm({ telephone, niveau }: { telephone: string; niveau: s
         <span className="text-[13px] text-muted">Visible uniquement par les organisateurs des événements qui le demandent.</span>
       </div>
 
-      <fieldset className="flex flex-col gap-2.5 rounded-3xl border border-line bg-surface p-4">
-        <legend className="sr-only">Niveau</legend>
-        <span className="font-extrabold">
-          Niveau <span className="font-semibold text-muted">(facultatif)</span>
-        </span>
-        <input type="hidden" name="niveau" value={lvl} />
-        <div className="flex flex-wrap gap-1.5">
-          {NIVEAUX.map((n) => (
-            <button
-              key={n}
-              type="button"
-              aria-pressed={lvl === n}
-              onClick={() => setLvl(lvl === n ? "" : n)}
-              className={`press h-11 min-w-14 rounded-full border px-3.5 text-sm font-extrabold ${lvl === n ? "border-accent bg-accent text-ink" : "border-line-strong"}`}
-            >
-              {n}
-            </button>
-          ))}
+      {externe ? (
+        <div className="flex flex-col gap-2.5 rounded-3xl border border-line bg-surface p-4">
+          <label htmlFor="organisme" className="font-extrabold">
+            Organisme <span className="font-semibold text-muted">(facultatif)</span>
+          </label>
+          <input
+            id="organisme"
+            name="organisme"
+            maxLength={80}
+            autoComplete="organization"
+            defaultValue={organisme}
+            placeholder="École, université, entreprise…"
+            className="h-12.5 rounded-2xl border-[1.5px] border-line-strong bg-ink px-3.5 font-bold outline-none focus:border-accent"
+          />
+          <span className="text-[13px] text-muted">Affiché aux organisateurs des événements auxquels tu t&apos;inscris.</span>
         </div>
-      </fieldset>
+      ) : (
+        <fieldset className="flex flex-col gap-2.5 rounded-3xl border border-line bg-surface p-4">
+          <legend className="sr-only">Niveau</legend>
+          <span className="font-extrabold">
+            Niveau <span className="font-semibold text-muted">(facultatif)</span>
+          </span>
+          <input type="hidden" name="niveau" value={lvl} />
+          <div className="flex flex-wrap gap-1.5">
+            {NIVEAUX.map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-pressed={lvl === n}
+                onClick={() => setLvl(lvl === n ? "" : n)}
+                className={`press h-11 min-w-14 rounded-full border px-3.5 text-sm font-extrabold ${lvl === n ? "border-accent bg-accent text-ink" : "border-line-strong"}`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       {state && (
         <span role="status" className={`text-sm font-bold ${state.ok ? "text-accent" : "text-danger"}`}>

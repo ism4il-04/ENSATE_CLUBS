@@ -9,14 +9,17 @@ import {
   attribuerPlaceAction,
   chercherEtudiantsAction,
   payerAction,
+  trouverBilletAction,
   type CaisseResult,
 } from "@/server/actions/caisse";
+import { QrScanner } from "./QrScanner";
 
 export type InscritRow = {
   id: string;
   nom: string;
   email: string;
   externe: boolean;
+  organisme: string | null;
   telephone: string | null;
   source: "EN_LIGNE" | "STAND" | "MEMBRE";
   statut: keyof typeof STATUT_INSCRIPTION;
@@ -79,6 +82,8 @@ export function InscritsTable({
   const [choice, setChoice] = useState<Record<string, string>>({});
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [toast, setToast] = useState<CaisseResult | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [focusId, setFocusId] = useState<string | null>(null); // inscription retrouvée par scan du billet
   const [pending, start] = useTransition();
 
   const run = (fn: () => Promise<CaisseResult>) =>
@@ -95,10 +100,21 @@ export function InscritsTable({
 
   const list = useMemo(() => {
     const order = { PRE_INSCRITE: 0, LISTE_ATTENTE: 1, CONFIRMEE: 2, ANNULEE: 3 };
+    if (focusId) return rows.filter((r) => r.id === focusId);
     return rows
       .filter((r) => inTab(r, tab) && (!q || norm(`${r.nom} ${r.email}`).includes(norm(q))))
       .sort((a, b) => order[a.statut] - order[b.statut]);
-  }, [rows, tab, q]);
+  }, [rows, tab, q, focusId]);
+
+  // BF-39 : scanner le billet d'un participant pour le retrouver à la caisse.
+  const onScan = (text: string) =>
+    start(async () => {
+      const r = await trouverBilletAction(eventId, text);
+      if (r.ok) {
+        setFocusId(r.id);
+        setScanning(false);
+      } else setToast({ ok: false, message: r.message });
+    });
 
   return (
     <div className="flex flex-col gap-3">
@@ -117,12 +133,34 @@ export function InscritsTable({
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setScanning(!scanning)}
+          className={`press flex h-11 items-center gap-2 rounded-full px-4 text-sm font-extrabold ${scanning ? "border border-line-strong" : "bg-surface-2"}`}
+        >
+          <Icon name="ticket" size={16} />
+          {scanning ? "Fermer la caméra" : "Scanner un billet"}
+        </button>
         <label className="flex h-11 w-full max-w-[260px] items-center gap-2 rounded-full border border-line bg-surface px-3.5 text-muted">
           <Icon name="search" size={16} />
           <span className="sr-only">Chercher un inscrit</span>
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Chercher un nom…" className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-paper outline-none" />
         </label>
       </div>
+
+      {scanning && (
+        <div className="mx-auto w-full max-w-sm">
+          <QrScanner active={scanning} onScan={(text) => !pending && onScan(text)} />
+        </div>
+      )}
+      {focusId && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-accent/40 bg-accent/8 px-4 py-2.5 text-sm font-bold">
+          {list.length ? "Billet scanné : participant retrouvé." : "Ce participant n'apparaît plus dans la liste."}
+          <button type="button" onClick={() => setFocusId(null)} className="press h-9 rounded-full border border-line-strong px-3 text-[13px] font-extrabold">
+            Voir tous les inscrits
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-[22px] border border-line bg-surface">
         <table className="w-full min-w-[860px] border-collapse text-sm">
@@ -147,7 +185,7 @@ export function InscritsTable({
                     <div className="font-extrabold">{r.nom}</div>
                     <div className="text-xs text-muted">
                       {r.email}
-                      {r.externe && " · externe"}
+                      {r.externe && ` · externe${r.organisme ? ` (${r.organisme})` : ""}`}
                     </div>
                   </td>
                   {telephoneRequis && <td className="px-2 py-3 whitespace-nowrap text-soft tabular-nums">{r.telephone ?? "—"}</td>}

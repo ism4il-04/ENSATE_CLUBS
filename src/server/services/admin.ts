@@ -64,6 +64,37 @@ export async function createOrganisation(input: z.input<typeof OrgSchema>, creat
   });
 }
 
+/**
+ * Modifie une organisation (BF-64). Le slug ne change pas (liens publics stables).
+ * Changer l'adresse du compte délie l'ancien compte Google : la nouvelle adresse s'active à sa première connexion,
+ * et les sessions ouvertes avec l'ancienne adresse se ferment à la prochaine vérification (5 min max).
+ */
+export async function updateOrganisation(id: string, input: z.input<typeof OrgSchema>) {
+  const parsed = OrgSchema.safeParse(input);
+  if (!parsed.success) throw new AdminError(parsed.error.issues[0]?.message);
+  const d = parsed.data;
+  return withTx(async (tx) => {
+    const [row] = await tx
+      .select({ org: s.organisation, email: s.compte.email })
+      .from(s.organisation)
+      .innerJoin(s.compte, eq(s.compte.id, s.organisation.idCompte))
+      .where(eq(s.organisation.id, id))
+      .for("update");
+    if (!row) throw new AdminError("Organisation introuvable.");
+    const [sameName] = await tx.select({ id: s.organisation.id }).from(s.organisation).where(eq(s.organisation.nom, d.nom));
+    if (sameName && sameName.id !== id) throw new AdminError("Une organisation porte déjà ce nom.");
+    await tx.update(s.organisation).set({ type: d.type, nom: d.nom, sigle: d.sigle || null }).where(eq(s.organisation.id, id));
+    let emailChange = false;
+    if (d.email !== row.email) {
+      const [taken] = await tx.select({ id: s.compte.id }).from(s.compte).where(eq(s.compte.email, d.email));
+      if (taken) throw new AdminError("Un compte existe déjà avec cette adresse.");
+      await tx.update(s.compte).set({ email: d.email, googleSub: null }).where(eq(s.compte.id, row.org.idCompte));
+      emailChange = true;
+    }
+    return { nom: d.nom, slug: row.org.slug, emailChange };
+  });
+}
+
 export async function setOrganisationStatut(id: string, active: boolean) {
   const [org] = await getDb()
     .update(s.organisation)

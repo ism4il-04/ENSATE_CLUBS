@@ -134,6 +134,24 @@ export async function creeParCoordinateur(eventId: string) {
   ]);
 }
 
+/** Événement publié par le coordinateur pour le compte d'un club (BF-68). */
+export async function publieParCoordinateur(eventId: string) {
+  const c = await eventContext(eventId);
+  if (!c) return;
+  await send(
+    c.orgs.map((o) =>
+      compose(o.email, {
+        subject: `Événement publié : ${c.titre}`,
+        title: "Le coordinateur a publié un événement de ton club",
+        lines: [`« ${c.titre} » est maintenant en ligne. Tu peux relire la publication, suivre les inscrits, encaisser et contrôler les entrées depuis ton espace.`],
+        details: c.quand,
+        cta: { label: "Ouvrir mon espace", path: "/org" },
+        accent: o.couleur,
+      }),
+    ),
+  );
+}
+
 function partenaires(c: NonNullable<Awaited<ReturnType<typeof eventContext>>>, contexte: string) {
   return c.orgs
     .filter((o) => o.role === "PARTENAIRE")

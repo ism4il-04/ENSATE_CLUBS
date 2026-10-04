@@ -55,7 +55,17 @@ export function ActionButton({ action, label, confirm, tone = "ghost" }: { actio
 }
 
 /** Formulaire de création branché sur une Server Action (React vide le formulaire après succès). */
-export function AdminForm({ action, submitLabel, children }: { action: (prev: AdminResult, fd: FormData) => Promise<AdminResult>; submitLabel: string; children: React.ReactNode }) {
+export function AdminForm({
+  action,
+  submitLabel,
+  pendingLabel = "Création…",
+  children,
+}: {
+  action: (prev: AdminResult, fd: FormData) => Promise<AdminResult>;
+  submitLabel: string;
+  pendingLabel?: string;
+  children: React.ReactNode;
+}) {
   const [state, formAction, pending] = useActionState(action, null);
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -66,7 +76,7 @@ export function AdminForm({ action, submitLabel, children }: { action: (prev: Ad
         </span>
       )}
       <button type="submit" disabled={pending} className="press h-12.5 rounded-full bg-accent font-extrabold text-ink">
-        {pending ? "Création…" : submitLabel}
+        {pending ? pendingLabel : submitLabel}
       </button>
       {state?.ok && <Toast key={state.at} result={state} />}
     </form>

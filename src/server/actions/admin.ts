@@ -10,6 +10,7 @@ import {
   setCompteStatut,
   setLieuActif,
   setOrganisationStatut,
+  updateOrganisation,
 } from "@/server/services/admin";
 
 export type AdminResult = { ok: boolean; message: string; at: number } | null;
@@ -33,6 +34,16 @@ export async function creerOrganisationAction(_prev: AdminResult, fd: FormData) 
     const user = await requireRole("COORDINATEUR", "ADMIN");
     const nom = await createOrganisation({ type: fd.get("type") === "ASSOCIATION" ? "ASSOCIATION" : "CLUB", nom: String(fd.get("nom") ?? ""), sigle: String(fd.get("sigle") ?? ""), email: String(fd.get("email") ?? "") }, user.id);
     return `${nom} créée : le compte s'activera à la première connexion Google.`;
+  });
+}
+
+export async function modifierOrganisationAction(id: string, _prev: AdminResult, fd: FormData) {
+  return wrap("/coord/organisations", async () => {
+    await requireRole("COORDINATEUR", "ADMIN");
+    const r = await updateOrganisation(id, { type: fd.get("type") === "ASSOCIATION" ? "ASSOCIATION" : "CLUB", nom: String(fd.get("nom") ?? ""), sigle: String(fd.get("sigle") ?? ""), email: String(fd.get("email") ?? "") });
+    revalidatePath(`/clubs/${r.slug}`);
+    revalidatePath("/clubs");
+    return r.emailChange ? `${r.nom} enregistrée : la nouvelle adresse s'activera à sa première connexion Google.` : `${r.nom} enregistrée.`;
   });
 }
 

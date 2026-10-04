@@ -42,7 +42,7 @@ export default async function Profil() {
         <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-bold text-muted">{ROLE[user.role]}</span>
       </div>
 
-      {personne && <ProfilForm telephone={personne.telephone ?? ""} niveau={personne.niveau ?? ""} />}
+      {personne && <ProfilForm telephone={personne.telephone ?? ""} niveau={personne.niveau ?? ""} organisme={personne.organisme ?? ""} externe={user.role === "EXTERNE"} />}
 
       <SignOutButton />
     </section>

@@ -80,6 +80,14 @@ export default async function CoordEvenement({ params }: PageProps<"/coord/evene
             </span>
           ))}
           {!m.decisions.length && <span className="text-muted">Aucune décision.</span>}
+          {(evt.statut === "VALIDE" || evt.statut === "PUBLIE") && (
+            <Link
+              href={`/coord/evenements/${evt.id}/publication`}
+              className={`press mt-2 flex h-11 items-center justify-center rounded-full font-extrabold ${evt.statut === "VALIDE" ? "bg-accent text-ink" : "border border-line-strong"}`}
+            >
+              {evt.statut === "VALIDE" ? "Compléter et publier" : "Modifier la publication"}
+            </Link>
+          )}
           {evt.statut === "PUBLIE" && (
             <Link href={`/evenements/${evt.slug}`} className="press mt-2 flex h-11 items-center justify-center rounded-full border border-line-strong font-extrabold">
               Voir la page publique

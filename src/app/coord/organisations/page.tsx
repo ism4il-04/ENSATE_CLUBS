@@ -2,13 +2,47 @@ import type { Metadata } from "next";
 import { ActionButton, AdminForm } from "@/components/coord/AdminControls";
 import { PageTitle } from "@/components/space/SpaceShell";
 import { dayLabel } from "@/lib/format";
-import { creerOrganisationAction, organisationStatutAction } from "@/server/actions/admin";
+import { creerOrganisationAction, modifierOrganisationAction, organisationStatutAction } from "@/server/actions/admin";
 import { listOrganisationsAdmin } from "@/server/services/admin";
 import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Organisations" };
 
 const field = "h-12 rounded-[14px] border-[1.5px] border-line-strong bg-ink px-3.5 font-semibold text-paper outline-none focus:border-accent";
+
+/** Champs communs à la création et à la modification. */
+function OrgFields({ org, email }: { org?: { type: string; nom: string; sigle: string | null }; email?: string }) {
+  return (
+    <>
+      <fieldset className="grid grid-cols-2 gap-1 rounded-full border border-line bg-ink p-1">
+        <legend className="sr-only">Type</legend>
+        {(
+          [
+            ["CLUB", "Club"],
+            ["ASSOCIATION", "Association"],
+          ] as const
+        ).map(([v, label]) => (
+          <label key={v} className="flex h-10 cursor-pointer items-center justify-center rounded-full text-[13px] font-extrabold has-checked:bg-accent has-checked:text-ink">
+            <input type="radio" name="type" value={v} defaultChecked={(org?.type ?? "CLUB") === v} className="sr-only" />
+            {label}
+          </label>
+        ))}
+      </fieldset>
+      <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
+        Nom
+        <input name="nom" required defaultValue={org?.nom} placeholder="Ex. : Club Astronomie" className={field} />
+      </label>
+      <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
+        Sigle (facultatif)
+        <input name="sigle" maxLength={6} defaultValue={org?.sigle ?? ""} className={field} />
+      </label>
+      <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
+        Adresse Google du compte
+        <input name="email" type="email" required defaultValue={email} placeholder="adresse@gmail.com" className={field} />
+      </label>
+    </>
+  );
+}
 
 export default async function Organisations() {
   await requirePageRole("/coord/organisations", "COORDINATEUR", "ADMIN");
@@ -25,7 +59,7 @@ export default async function Organisations() {
             return (
               <article key={org.id} className={`animate-rise flex flex-col gap-3 rounded-[22px] border border-line bg-surface p-4 ${active ? "" : "opacity-60"}`} style={{ animationDelay: `${i * 30}ms` }}>
                 <div className="flex items-center gap-3">
-                  <span className="grid size-12 flex-none place-items-center rounded-[15px] font-extrabold text-ink" style={{ background: org.couleur }}>
+                  <span className={`grid size-12 flex-none place-items-center rounded-[15px] font-extrabold text-ink ${(org.sigle ?? "").length > 3 ? "text-[11px]" : ""}`} style={{ background: org.couleur }}>
                     {(org.sigle ?? org.nom.slice(0, 2)).toUpperCase()}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -40,6 +74,16 @@ export default async function Organisations() {
                     {googleSub ? `Compte actif${derniereConnexion ? ` · ${dayLabel(derniereConnexion)}` : ""}` : "Jamais connecté"}
                   </span>
                 </div>
+                <details className="group rounded-2xl border border-line bg-ink/40 open:p-3">
+                  <summary className="press flex min-h-10 cursor-pointer list-none items-center justify-between px-3 text-[13px] font-extrabold text-soft group-open:px-0 group-open:pb-2">
+                    Modifier
+                    <span aria-hidden className="text-muted transition-transform group-open:rotate-90">›</span>
+                  </summary>
+                  <AdminForm action={modifierOrganisationAction.bind(null, org.id)} submitLabel="Enregistrer" pendingLabel="Enregistrement…">
+                    <OrgFields org={org} email={email} />
+                    <span className="text-[12px] leading-relaxed text-faint">Changer l&apos;adresse délie l&apos;ancien compte Google : la nouvelle s&apos;active à sa première connexion.</span>
+                  </AdminForm>
+                </details>
                 <div className="flex items-center justify-between border-t border-line pt-2.5 text-[13px] text-muted">
                   <span>
                     {evenements} événement{evenements > 1 ? "s" : ""}
@@ -60,32 +104,7 @@ export default async function Organisations() {
         <aside className="flex flex-[1_1_300px] flex-col gap-3.5 rounded-3xl border border-line bg-surface p-5">
           <h2 className="text-lg font-extrabold">Nouvelle organisation</h2>
           <AdminForm action={creerOrganisationAction} submitLabel="Créer l'organisation">
-            <fieldset className="grid grid-cols-2 gap-1 rounded-full border border-line bg-ink p-1">
-              <legend className="sr-only">Type</legend>
-              {(
-                [
-                  ["CLUB", "Club"],
-                  ["ASSOCIATION", "Association"],
-                ] as const
-              ).map(([v, label], i) => (
-                <label key={v} className="flex h-10 cursor-pointer items-center justify-center rounded-full text-[13px] font-extrabold has-checked:bg-accent has-checked:text-ink">
-                  <input type="radio" name="type" value={v} defaultChecked={i === 0} className="sr-only" />
-                  {label}
-                </label>
-              ))}
-            </fieldset>
-            <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
-              Nom
-              <input name="nom" required placeholder="Ex. : Club Astronomie" className={field} />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
-              Sigle (facultatif)
-              <input name="sigle" maxLength={6} className={field} />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
-              Adresse Google du compte
-              <input name="email" type="email" required placeholder="adresse@gmail.com" className={field} />
-            </label>
+            <OrgFields />
             <span className="text-[13px] leading-relaxed text-muted">N&apos;importe quelle adresse Google. Le compte s&apos;active à la première connexion « Continuer avec Google ».</span>
           </AdminForm>
         </aside>

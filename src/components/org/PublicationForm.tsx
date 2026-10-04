@@ -56,6 +56,7 @@ function Switch({ label, hint, on, disabled, onChange }: { label: string; hint: 
 const field = "h-12.5 rounded-[14px] border-[1.5px] border-line-strong bg-ink px-3.5 font-bold outline-none focus:border-accent";
 
 export function PublicationForm({
+  espace,
   eventId,
   slug,
   statut,
@@ -69,6 +70,7 @@ export function PublicationForm({
   activites,
   uploads,
 }: {
+  espace: "org" | "coord";
   eventId: string;
   slug: string;
   statut: "VALIDE" | "PUBLIE";
@@ -145,7 +147,11 @@ export function PublicationForm({
           </span>
           <div className="flex flex-col gap-0.5">
             <span className="font-extrabold">{creneauxLabel}</span>
-            <span className="text-[13px] text-muted">Créneaux verrouillés après validation. Pour les changer, contacte le coordinateur des clubs.</span>
+            <span className="text-[13px] text-muted">
+              {espace === "coord"
+                ? "Créneaux verrouillés ici : modifie-les depuis la fiche de l'événement."
+                : "Créneaux verrouillés après validation. Pour les changer, contacte le coordinateur des clubs."}
+            </span>
           </div>
         </div>
 
@@ -322,7 +328,7 @@ export function PublicationForm({
             <h2 className="text-[17px] font-extrabold">Activités du programme</h2>
             <p className="text-sm text-muted">Chaque activité a ses propres tarifs, places et mode d&apos;inscription.</p>
             {activites.map((a) => (
-              <Link key={a.id} href={`/org/evenements/${a.id}/publication`} className="press flex items-center justify-between rounded-2xl border border-line bg-ink px-4 py-3 font-bold">
+              <Link key={a.id} href={`/${espace}/evenements/${a.id}/publication`} className="press flex items-center justify-between rounded-2xl border border-line bg-ink px-4 py-3 font-bold">
                 {a.titre}
                 <Icon name="chevronRight" className="text-muted" />
               </Link>

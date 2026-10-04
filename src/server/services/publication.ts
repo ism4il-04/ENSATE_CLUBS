@@ -133,6 +133,6 @@ export async function savePublication(eventId: string, input: PublicationInput, 
       await tx.update(s.evenement).set({ statut: "PUBLIE" }).where(eq(s.evenement.id, eventId));
       if (isProgramme) await tx.update(s.evenement).set({ statut: "PUBLIE" }).where(and(eq(s.evenement.idParent, eventId), eq(s.evenement.statut, "VALIDE")));
     }
-    return { slug: evt.slug, published: opts.publish || evt.statut === "PUBLIE" };
+    return { slug: evt.slug, published: opts.publish || evt.statut === "PUBLIE", nouvellementPublie: opts.publish && evt.statut === "VALIDE" };
   });
 }
