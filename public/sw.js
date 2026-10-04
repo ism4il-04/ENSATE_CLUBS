@@ -2,7 +2,7 @@
 // - Fichiers statiques (_next/static, icônes, polices) : cache d'abord.
 // - Pages : réseau d'abord, puis page « hors ligne ».
 // - Billets (/moi/billets/…) : gardés en cache pour pouvoir les présenter sans réseau.
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC = `static-${VERSION}`;
 const PAGES = `pages-${VERSION}`;
 const BILLETS = "billets";
@@ -53,7 +53,8 @@ self.addEventListener("fetch", (event) => {
       (async () => {
         try {
           const res = await fetch(req);
-          if (isBillet && res.ok) (await caches.open(BILLETS)).put(req, res.clone());
+          // Jamais une redirection (ex. vers /connexion) : seul le vrai billet est gardé.
+          if (isBillet && res.ok && !res.redirected) (await caches.open(BILLETS)).put(req, res.clone());
           return res;
         } catch {
           const cached = isBillet ? await caches.match(req) : null;

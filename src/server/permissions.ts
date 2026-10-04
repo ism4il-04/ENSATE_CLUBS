@@ -25,6 +25,13 @@ export class AccessError extends Error {
   }
 }
 
+/** Page réservée à certains rôles : vérifiée dans chaque page (un layout ne re-vérifie pas à la navigation). */
+export async function requirePageRole(retour: string, ...roles: Role[]) {
+  const user = await requireUser(retour);
+  if (!roles.includes(user.role)) redirect("/");
+  return user;
+}
+
 /** Action / API : lève une erreur au lieu de rediriger. */
 export async function requireRole(...roles: Role[]) {
   const user = await getSessionUser();

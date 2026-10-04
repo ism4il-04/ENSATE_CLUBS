@@ -51,8 +51,9 @@ async function findCompte(sub: string, email: string) {
     .from(schema.compte)
     .where(or(eq(schema.compte.googleSub, sub), eq(schema.compte.email, email)))
     .limit(2);
-  // Le sub Google l'emporte sur l'email (l'adresse peut changer).
-  return rows.find((c) => c.googleSub === sub) ?? rows[0] ?? null;
+  // Le sub Google l'emporte sur l'email (l'adresse peut changer). Un compte trouvé par email mais déjà lié
+  // à un autre compte Google n'est pas celui de cette personne : on ne s'y connecte pas.
+  return rows.find((c) => c.googleSub === sub) ?? rows.find((c) => c.googleSub === null) ?? null;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -71,6 +72,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const db = getDb();
       const sub = account.providerAccountId;
       const existing = await findCompte(sub, email);
+      if (!existing) {
+        // Adresse déjà liée à un autre compte Google : refus plutôt que doublon.
+        const [taken] = await db.select({ id: schema.compte.id }).from(schema.compte).where(eq(schema.compte.email, email)).limit(1);
+        if (taken) return REFUS;
+      }
 
       if (existing) {
         if (existing.statut !== "ACTIF") return REFUS; // RG-24

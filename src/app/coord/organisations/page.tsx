@@ -4,12 +4,14 @@ import { PageTitle } from "@/components/space/SpaceShell";
 import { dayLabel } from "@/lib/format";
 import { creerOrganisationAction, organisationStatutAction } from "@/server/actions/admin";
 import { listOrganisationsAdmin } from "@/server/services/admin";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Organisations" };
 
 const field = "h-12 rounded-[14px] border-[1.5px] border-line-strong bg-ink px-3.5 font-semibold text-paper outline-none focus:border-accent";
 
 export default async function Organisations() {
+  await requirePageRole("/coord/organisations", "COORDINATEUR", "ADMIN");
   const orgs = await listOrganisationsAdmin();
   const clubs = orgs.filter((o) => o.org.type === "CLUB").length;
 

@@ -7,6 +7,7 @@ import { rangeLabel } from "@/lib/format";
 import { STATUT_EVENEMENT, type StatutEvenement } from "@/lib/statuts";
 import { getDb, schema as s } from "@/server/db";
 import { creneauxOf, orgsOf } from "@/server/services/coord";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Tous les événements" };
 
@@ -23,6 +24,7 @@ const FILTRES: [string, string][] = [
 const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 export default async function CoordEvenements({ searchParams }: PageProps<"/coord/evenements">) {
+  await requirePageRole("/coord/evenements", "COORDINATEUR", "ADMIN");
   const sp = await searchParams;
   const statut = typeof sp.statut === "string" ? sp.statut : "";
   const org = typeof sp.org === "string" ? sp.org : "";

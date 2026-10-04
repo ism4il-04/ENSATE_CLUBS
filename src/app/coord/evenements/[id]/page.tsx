@@ -7,12 +7,13 @@ import { Icon } from "@/components/ui/Icon";
 import { dayLabel, LIEU_LABEL, timeLabel } from "@/lib/format";
 import { utcToZoned } from "@/lib/dates";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
-import { AccessError } from "@/server/permissions";
+import { AccessError, requirePageRole } from "@/server/permissions";
 import { countInscritsActifs, getManagedEvent, listLieux } from "@/server/queries/org";
 
 export const metadata: Metadata = { title: "Événement" };
 
 export default async function CoordEvenement({ params }: PageProps<"/coord/evenements/[id]">) {
+  await requirePageRole("/coord/evenements", "COORDINATEUR", "ADMIN");
   const { id } = await params;
   let m;
   try {

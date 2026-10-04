@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, desc, eq, gte, inArray, lte, ne, sql } from "drizzle-orm";
+import { z } from "zod";
 import { getDb, schema as s } from "@/server/db";
 import { withTx } from "@/server/db/tx";
 import { utcToZoned, zonedToUtc } from "@/lib/dates";
@@ -107,7 +108,8 @@ export class DecisionError extends Error {}
 
 /** Décision du coordinateur (RG-07) : s'applique au programme et à ses activités. */
 export async function decider(p: { eventId: string; coordId: string; decision: "VALIDE" | "REFUSE" | "MODIF_DEMANDEE"; commentaire: string }) {
-  const commentaire = p.commentaire.trim();
+  if (!["VALIDE", "REFUSE", "MODIF_DEMANDEE"].includes(p.decision)) throw new DecisionError("Décision invalide.");
+  const commentaire = String(p.commentaire ?? "").trim().slice(0, 1000);
   if (p.decision !== "VALIDE" && !commentaire) throw new DecisionError("Ajoute un commentaire pour expliquer ta décision au club.");
   return withTx(async (tx) => {
     const [evt] = await tx.select().from(s.evenement).where(eq(s.evenement.id, p.eventId)).for("update");
@@ -120,11 +122,26 @@ export async function decider(p: { eventId: string; coordId: string; decision: "
 }
 
 /** Modification des créneaux par le coordinateur après validation (RG-08). */
-export async function remplacerCreneaux(eventId: string, creneaux: { date: string; debut: string; fin: string; lieux: { idLieu: string; precision?: string }[] }[]) {
-  if (!creneaux.length) throw new DecisionError("Au moins un créneau est nécessaire.");
+const CreneauxSchema = z
+  .array(
+    z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide."),
+      debut: z.string().regex(/^\d{2}:\d{2}$/, "Heure invalide."),
+      fin: z.string().regex(/^\d{2}:\d{2}$/, "Heure invalide."),
+      lieux: z.array(z.object({ idLieu: z.string().uuid("Lieu invalide."), precision: z.string().max(120).optional() })).min(1, "Chaque créneau doit avoir au moins un lieu.").max(20),
+    }),
+  )
+  .min(1, "Au moins un créneau est nécessaire.")
+  .max(31);
+
+export async function remplacerCreneaux(eventId: string, input: { date: string; debut: string; fin: string; lieux: { idLieu: string; precision?: string }[] }[]) {
+  const parsed = CreneauxSchema.safeParse(input);
+  if (!parsed.success) throw new DecisionError(parsed.error.issues[0]?.message ?? "Créneaux invalides.");
+  const creneaux = parsed.data;
   return withTx(async (tx) => {
     const [evt] = await tx.select().from(s.evenement).where(eq(s.evenement.id, eventId)).for("update");
     if (!evt || evt.structure === "PROGRAMME") throw new DecisionError("Modifie les créneaux activité par activité.");
+    if (evt.statut !== "VALIDE" && evt.statut !== "PUBLIE") throw new DecisionError("Seuls les créneaux d'un événement validé ou publié peuvent être modifiés.");
     const used = await tx
       .select({ n: sql<number>`count(*)`.mapWith(Number) })
       .from(s.presence)

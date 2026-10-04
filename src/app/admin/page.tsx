@@ -5,7 +5,7 @@ import { PageTitle } from "@/components/space/SpaceShell";
 import { Icon } from "@/components/ui/Icon";
 import { dayLabel } from "@/lib/format";
 import { compteStatutAction, creerCompteAction } from "@/server/actions/admin";
-import { getSessionUser } from "@/server/permissions";
+import { requirePageRole } from "@/server/permissions";
 import { listComptes } from "@/server/services/admin";
 
 export const metadata: Metadata = { title: "Comptes" };
@@ -21,10 +21,10 @@ const field = "h-12 rounded-[14px] border-[1.5px] border-line-strong bg-ink px-3
 const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 export default async function Comptes({ searchParams }: PageProps<"/admin">) {
+  const me = await requirePageRole("/admin", "ADMIN");
   const sp = await searchParams;
   const role = typeof sp.role === "string" ? sp.role : "";
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
-  const me = await getSessionUser();
   const all = await listComptes();
   const base = all.filter((r) => !q || norm(`${r.compte.email} ${r.prenom ?? ""} ${r.nom ?? ""} ${r.organisation ?? ""}`).includes(norm(q)));
   const list = base.filter((r) => !role || r.compte.role === role);

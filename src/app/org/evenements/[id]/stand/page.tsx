@@ -36,7 +36,7 @@ export default async function Stand({ params }: PageProps<"/org/evenements/[id]/
           pre: evt.gratuit ? list.filter((r) => r.source === "STAND" && r.statut !== "ANNULEE").length : stats.pre,
           encaisse: stats.encaisse,
         }}
-        rows={list.map((r) => ({ ...r, tokenBillet: undefined }))}
+        rows={list}
         tarifs={tarifs}
         gratuit={evt.gratuit}
         telephoneRequis={evt.telephoneRequis}

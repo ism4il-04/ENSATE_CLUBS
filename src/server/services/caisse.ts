@@ -178,7 +178,6 @@ export async function listInscrits(eventId: string, viewerOrgId: string | null) 
       encaissePar: ins.idOrganisationEncaisse ? (orgs.find((o) => o.id === ins.idOrganisationEncaisse)?.nom ?? null) : null,
       tarif: mine ? (tarifs.find((t) => t.id === ins.idTarif)?.libelle ?? null) : null,
       montant: mine && ins.montantPaye !== null ? Number(ins.montantPaye) : null,
-      tokenBillet: ins.tokenBillet,
       presences: creneaux.map((c) => presences.some((p) => p.idInscription === ins.id && p.idCreneau === c.id)),
     };
   });

@@ -8,6 +8,7 @@ import { STATUT_EVENEMENT } from "@/lib/statuts";
 import { utcToZoned, zonedToUtc } from "@/lib/dates";
 import { getDb, schema as s } from "@/server/db";
 import { creneauxOf, orgsOf } from "@/server/services/coord";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Calendrier" };
 
@@ -26,6 +27,7 @@ const matchPlace = (code: string, f: string) =>
   !f || (f === "RDC" ? /^00\d$/.test(code) : f === "E1" ? /^1\d\d$/.test(code) : f === "E2" ? /^2\d\d$/.test(code) : code === f);
 
 export default async function Calendrier({ searchParams }: PageProps<"/coord/calendrier">) {
+  await requirePageRole("/coord/calendrier", "COORDINATEUR", "ADMIN");
   const sp = await searchParams;
   const today = utcToZoned(new Date()).date;
   const mois = typeof sp.mois === "string" && /^\d{4}-\d{2}$/.test(sp.mois) ? sp.mois : today.slice(0, 7);

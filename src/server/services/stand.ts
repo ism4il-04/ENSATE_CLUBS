@@ -88,7 +88,7 @@ export async function verifierJeton(sessionId: string, token: string) {
 function sign(value: string) {
   const secret = process.env.AUTH_SECRET;
   if (!secret) throw new Error("AUTH_SECRET manquant");
-  return createHmac("sha256", secret).update(value).digest("base64url");
+  return createHmac("sha256", secret).update(`stand-acces:${value}`).digest("base64url"); // préfixe : usage distinct du secret
 }
 
 export function standCookieName(sessionId: string) {

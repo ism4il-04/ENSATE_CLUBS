@@ -4,10 +4,10 @@ import { listInscrits } from "@/server/services/caisse";
 const STATUT: Record<string, string> = { PRE_INSCRITE: "Pré-inscrit", CONFIRMEE: "Confirmé", LISTE_ATTENTE: "Liste d'attente", ANNULEE: "Annulé" };
 const SOURCE: Record<string, string> = { EN_LIGNE: "En ligne", STAND: "Stand", MEMBRE: "Membre" };
 
-// Neutralise les formules dans Excel (=, +, -, @) et échappe les guillemets.
+// Neutralise les formules dans Excel (=, +, -, @, tabulation, retour chariot) et échappe les guillemets.
 const cell = (v: unknown) => {
   let t = v === null || v === undefined ? "" : String(v);
-  if (/^[=+\-@]/.test(t)) t = "'" + t;
+  if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
   return `"${t.replace(/"/g, '""')}"`;
 };
 

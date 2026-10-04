@@ -4,6 +4,7 @@ import { PageTitle } from "@/components/space/SpaceShell";
 import { CATEGORIES, type CategorieKey } from "@/lib/format";
 import { utcToZoned, zonedToUtc } from "@/lib/dates";
 import { statistiques } from "@/server/services/admin";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Statistiques" };
 
@@ -19,6 +20,7 @@ function periode(p: string) {
 }
 
 export default async function Statistiques({ searchParams }: PageProps<"/coord/statistiques">) {
+  await requirePageRole("/coord/statistiques", "COORDINATEUR", "ADMIN");
   const p = String((await searchParams).periode ?? "mois");
   const { from, to } = periode(p);
   const st = await statistiques(from, to);

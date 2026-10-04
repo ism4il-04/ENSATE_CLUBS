@@ -3,6 +3,7 @@ import { ActionButton, AdminForm } from "@/components/coord/AdminControls";
 import { PageTitle } from "@/components/space/SpaceShell";
 import { creerLieuAction, lieuActifAction } from "@/server/actions/admin";
 import { listLieuxAdmin } from "@/server/services/admin";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Lieux" };
 
@@ -16,6 +17,7 @@ const TYPES = [
 ] as const;
 
 export default async function Lieux() {
+  await requirePageRole("/coord/lieux", "COORDINATEUR", "ADMIN");
   const lieux = await listLieuxAdmin();
   const groups = [
     ["Rez-de-chaussée", lieux.filter((l) => l.type === "SALLE" && l.etage === 0)],

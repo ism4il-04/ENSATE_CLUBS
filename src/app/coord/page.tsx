@@ -6,12 +6,14 @@ import { Icon } from "@/components/ui/Icon";
 import { CATEGORIES, dateStamp, dayLabel, timeLabel, type CategorieKey } from "@/lib/format";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
 import { listDemandes, sameDay } from "@/server/services/coord";
+import { requirePageRole } from "@/server/permissions";
 
 export const metadata: Metadata = { title: "Demandes en attente" };
 
 const DECISION = { VALIDE: "Validé", REFUSE: "Refusé", MODIF_DEMANDEE: "Modification demandée" };
 
 export default async function Demandes({ searchParams }: PageProps<"/coord">) {
+  await requirePageRole("/coord", "COORDINATEUR", "ADMIN");
   const demandes = await listDemandes();
   const wanted = (await searchParams).id;
   const sel = demandes.find((d) => d.evt.id === wanted) ?? demandes[0] ?? null;

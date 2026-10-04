@@ -54,7 +54,7 @@ export default async function Inscrits({ params }: PageProps<"/org/evenements/[i
       </div>
       <InscritsTable
         eventId={evt.id}
-        rows={list.map((r) => ({ ...r, tokenBillet: undefined }))}
+        rows={list}
         tarifs={tarifs}
         gratuit={evt.gratuit}
         telephoneRequis={evt.telephoneRequis}
