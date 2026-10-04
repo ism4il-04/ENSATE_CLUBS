@@ -3,6 +3,12 @@ import { Icon } from "@/components/ui/Icon";
 import { CATEGORIES, dateStamp, rangeLabel, type CategorieKey } from "@/lib/format";
 import type { EventCard as EventCardData } from "@/server/queries/evenements";
 
+/** Taille du titre sur l'affiche : le mot le plus long doit tenir à côté de la date. */
+function posterSize(titre: string) {
+  const longest = Math.max(...titre.split(/\s+/).map((w) => w.length));
+  return longest > 10 ? "text-[20px]" : longest > 8 || titre.length > 16 ? "text-[24px]" : "text-3xl";
+}
+
 export function priceText(e: Pick<EventCardData, "gratuit" | "prixMin" | "tarifs">) {
   if (e.gratuit) return "Gratuit";
   if (!e.tarifs.length) return "Tarif au stand";
@@ -44,7 +50,7 @@ export function EventCard({ e, index = 0 }: { e: EventCardData; index?: number }
             )}
           </div>
           <div className="relative flex items-end justify-between gap-3">
-            <span className="font-display text-3xl leading-[0.88] font-extrabold tracking-tight uppercase">{e.titre}</span>
+            <span className={`min-w-0 font-display leading-[0.88] font-extrabold tracking-tight hyphens-auto uppercase ${posterSize(e.titre)}`}>{e.titre}</span>
             {stamp && (
               <span className="flex min-w-14 flex-none flex-col items-center rounded-2xl bg-ink px-1.5 py-2 leading-none text-paper">
                 <span className="text-[11px] font-extrabold tracking-widest text-muted">{stamp.dow}</span>

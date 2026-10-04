@@ -5,6 +5,7 @@
 import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
+import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import * as s from "../src/server/db/schema";
 
@@ -39,6 +40,22 @@ async function main() {
     console.log("! ADMIN_EMAIL absent : aucun compte admin créé");
   }
   if (!demo) return;
+
+  // ---- Démo : comptes pour la connexion de démonstration (AUTH_DEV_LOGIN=1, local uniquement)
+  const people = [
+    { email: "etudiant.demo@etu.uae.ac.ma", role: "ETUDIANT" as const, prenom: "Yasmine", nom: "El Amrani", niveau: "GI2" },
+    { email: "externe.demo@example.com", role: "EXTERNE" as const, prenom: "Karim", nom: "Bennani", niveau: null },
+    { email: "coordination.demo@example.com", role: "COORDINATEUR" as const, prenom: "Coordination", nom: "Clubs", niveau: null },
+    { email: "admin.demo@example.com", role: "ADMIN" as const, prenom: "Admin", nom: "ENSATE", niveau: null },
+  ];
+  const ids: Record<string, string> = {};
+  for (const p of people) {
+    await db.insert(s.compte).values({ email: p.email, role: p.role }).onConflictDoNothing();
+    const [c] = await db.select().from(s.compte).where(eq(s.compte.email, p.email));
+    ids[p.role] = c.id;
+    await db.insert(s.personne).values({ idCompte: c.id, prenom: p.prenom, nom: p.nom, niveau: p.niveau }).onConflictDoNothing();
+  }
+  console.log(`✓ ${people.length} comptes de démonstration`);
 
   // ---- Démo : organisations + événements publiés
   const orgs = [
@@ -104,6 +121,38 @@ async function main() {
       await db.insert(s.tarif).values(e.tarifs.map(([libelle, prix, affiche], i) => ({ idEvenement: evt.id, libelle, prix: String(prix), affiche, ordre: i })));
     console.log(`✓ événement ${e.titre}`);
   }
+
+  // ---- Démo : une demande en attente pour le coordinateur
+  if (!(await db.select({ id: s.evenement.id }).from(s.evenement).where(eq(s.evenement.slug, "atelier-git-github"))).length) {
+    const [evt] = await db
+      .insert(s.evenement)
+      .values({
+        structure: "SIMPLE", titre: "Atelier Git & GitHub", slug: "atelier-git-github", categorie: "ATELIER", couleur: "#C6F24E",
+        descriptionCourte: "Versionner ses projets et collaborer.", gratuit: true, capacite: 40,
+        modeInscription: "EN_LIGNE", statut: "EN_ATTENTE", idCreateur: createur,
+      })
+      .returning();
+    await db.insert(s.organisationEvenement).values({ idEvenement: evt.id, idOrganisation: orgIds["club-informatique"], role: "PRINCIPAL" });
+    const [c] = await db.insert(s.creneau).values({ idEvenement: evt.id, debut: day(9, 15), fin: day(9, 17) }).returning();
+    await db.insert(s.creneauLieu).values({ idCreneau: c.id, idLieu: L("AMPHI") });
+    console.log("✓ demande en attente : Atelier Git & GitHub");
+  }
+
+  // ---- Démo : billets de l'étudiant (un payé, un gratuit) et une pré-inscription externe
+  const bySlug = async (slug: string) => (await db.select().from(s.evenement).where(eq(s.evenement.slug, slug)))[0];
+  const hack = await bySlug("hackathon-ia-24h");
+  const conf = await bySlug("conference-transition-energetique");
+  const [tarifNA] = await db.select().from(s.tarif).where(eq(s.tarif.idEvenement, hack.id)).then((r) => r.filter((t) => t.libelle === "Non-adhérent"));
+  const token = () => randomBytes(32).toString("base64url");
+  await db
+    .insert(s.inscription)
+    .values([
+      { idEvenement: hack.id, idCompte: ids.ETUDIANT, statut: "CONFIRMEE", source: "STAND", tokenBillet: token(), idTarif: tarifNA.id, montantPaye: tarifNA.prix, datePaiement: new Date(), idOrganisationEncaisse: orgIds["club-informatique"] },
+      { idEvenement: conf.id, idCompte: ids.ETUDIANT, statut: "CONFIRMEE", source: "EN_LIGNE", tokenBillet: token() },
+      { idEvenement: hack.id, idCompte: ids.EXTERNE, statut: "PRE_INSCRITE", source: "EN_LIGNE", tokenBillet: token() },
+    ])
+    .onConflictDoNothing();
+  console.log("✓ inscriptions de démonstration");
 }
 
 main().catch((e) => {

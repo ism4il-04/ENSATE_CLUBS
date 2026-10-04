@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn, signOut } from "@/auth";
+import { DEV_LOGIN, signIn, signOut } from "@/auth";
 
 /** N'accepte qu'un chemin interne (évite les redirections ouvertes). */
 function safePath(p: FormDataEntryValue | null) {
@@ -10,6 +10,12 @@ function safePath(p: FormDataEntryValue | null) {
 
 export async function signInWithGoogle(formData: FormData) {
   await signIn("google", { redirectTo: safePath(formData.get("retour")) });
+}
+
+/** Connexion de démonstration (développement local uniquement). */
+export async function devSignIn(formData: FormData) {
+  if (!DEV_LOGIN) return;
+  await signIn("dev", { email: String(formData.get("email") ?? ""), redirectTo: safePath(formData.get("retour")) });
 }
 
 export async function signOutAction() {

@@ -1,4 +1,5 @@
 import NextAuth, { type DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { eq, or } from "drizzle-orm";
 import { getDb, schema } from "@/server/db";
@@ -14,6 +15,25 @@ declare module "next-auth" {
 const ETU_DOMAIN = "@etu.uae.ac.ma";
 const REFRESH_MS = 5 * 60 * 1000; // relecture du rôle / statut toutes les 5 min
 const REFUS = "/connexion?erreur=COMPTE_NON_AUTORISE";
+
+/**
+ * Connexion de démonstration : uniquement en développement local avec AUTH_DEV_LOGIN=1,
+ * et seulement vers un compte existant et actif. Jamais disponible en production.
+ */
+export const DEV_LOGIN = process.env.NODE_ENV !== "production" && process.env.AUTH_DEV_LOGIN === "1";
+
+const devProvider = Credentials({
+  id: "dev",
+  name: "Démo",
+  credentials: { email: {} },
+  async authorize(credentials) {
+    if (!DEV_LOGIN) return null;
+    const email = String(credentials?.email ?? "").trim().toLowerCase();
+    const [c] = await getDb().select().from(schema.compte).where(eq(schema.compte.email, email)).limit(1);
+    if (!c || c.statut !== "ACTIF") return null;
+    return { id: c.id, email: c.email };
+  },
+});
 
 type GoogleProfile = {
   email?: string;
@@ -36,12 +56,13 @@ async function findCompte(sub: string, email: string) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Google({ authorization: { params: { prompt: "select_account" } } })],
+  providers: [Google({ authorization: { params: { prompt: "select_account" } } }), ...(DEV_LOGIN ? [devProvider] : [])],
   pages: { signIn: "/connexion", error: "/connexion" },
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   callbacks: {
     // RG-01 : connexion Google uniquement, adresse vérifiée.
     async signIn({ account, profile }) {
+      if (account?.provider === "dev") return DEV_LOGIN;
       if (account?.provider !== "google") return false;
       const p = (profile ?? {}) as GoogleProfile;
       const email = p.email?.trim().toLowerCase();
@@ -83,14 +104,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const fresh = typeof token.checkedAt === "number" && now - token.checkedAt < REFRESH_MS;
       if (!account && fresh) return token;
 
-      const sub = account?.providerAccountId ?? (token.googleSub as string | undefined);
-      if (!sub) return null;
-      const c = await findCompte(sub, (token.email ?? "").toLowerCase());
+      const isDev = account ? account.provider === "dev" : token.dev === true;
+      let c;
+      if (isDev) {
+        if (!DEV_LOGIN) return null;
+        const id = account?.providerAccountId ?? (token.uid as string | undefined);
+        if (!id) return null;
+        [c] = await getDb().select().from(schema.compte).where(eq(schema.compte.id, id)).limit(1);
+      } else {
+        const sub = account?.providerAccountId ?? (token.googleSub as string | undefined);
+        if (!sub) return null;
+        c = await findCompte(sub, (token.email ?? "").toLowerCase());
+        token.googleSub = sub;
+      }
       if (!c || c.statut !== "ACTIF") return null; // compte suspendu → déconnexion
 
       token.uid = c.id;
       token.role = c.role;
-      token.googleSub = sub;
+      token.dev = isDev || undefined;
       token.checkedAt = now;
       return token;
     },

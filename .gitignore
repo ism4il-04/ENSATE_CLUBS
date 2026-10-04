@@ -45,3 +45,4 @@ next-env.d.ts
 # fichiers générés pour les assistants IA (recréés par next dev)
 CLAUDE.md
 AGENTS.md
+.neon

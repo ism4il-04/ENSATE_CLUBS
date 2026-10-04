@@ -73,7 +73,7 @@ export default async function Accueil({ searchParams }: PageProps<"/">) {
                 {CATEGORIES[featured.categorie as CategorieKey]}
               </span>
             </div>
-            <span className="relative font-display text-[clamp(52px,6.6vw,92px)] leading-[0.84] font-extrabold tracking-[-0.055em] uppercase">
+            <span className={`relative font-display leading-[0.84] font-extrabold tracking-[-0.055em] break-words hyphens-auto uppercase ${featured.titre.length > 14 ? "text-[clamp(40px,4.6vw,64px)]" : "text-[clamp(52px,6.6vw,92px)]"}`}>
               {featured.titre}
             </span>
             {featured.debut && (

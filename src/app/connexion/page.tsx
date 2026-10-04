@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, DEV_LOGIN } from "@/auth";
 import { Logo } from "@/components/site/Logo";
 import { Icon } from "@/components/ui/Icon";
-import { signInWithGoogle } from "@/server/actions/auth";
+import { devSignIn, signInWithGoogle } from "@/server/actions/auth";
 
 export const metadata: Metadata = { title: "Connexion" };
 
@@ -70,6 +70,32 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
               Continuer avec Google
             </button>
           </form>
+
+          {DEV_LOGIN && (
+            <div className="flex flex-col gap-2.5 rounded-[20px] border border-dashed border-amber/60 bg-amber/8 p-4">
+              <span className="text-[13px] font-extrabold tracking-wider text-amber uppercase">Démo locale (désactivée en production)</span>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    ["etudiant.demo@etu.uae.ac.ma", "Étudiant"],
+                    ["externe.demo@example.com", "Externe"],
+                    ["club.info.demo@example.com", "Club Informatique"],
+                    ["club.robot.demo@example.com", "Club Robotique"],
+                    ["coordination.demo@example.com", "Coordinateur"],
+                    ["admin.demo@example.com", "Admin"],
+                  ] as const
+                ).map(([email, label]) => (
+                  <form key={email} action={devSignIn}>
+                    <input type="hidden" name="email" value={email} />
+                    <input type="hidden" name="retour" value={label === "Coordinateur" ? "/coord" : label === "Admin" ? "/admin" : label.startsWith("Club") ? "/org" : retour} />
+                    <button type="submit" className="press h-11 w-full rounded-full border border-line-strong bg-surface text-sm font-extrabold">
+                      {label}
+                    </button>
+                  </form>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2.5 text-sm leading-relaxed">
             {[

@@ -38,6 +38,12 @@ npm run db:seed -- --demo    # lieux, compte admin et événements de démonstra
 npm run dev                  # http://localhost:3000
 ```
 
+### Connexion de démonstration (local)
+
+Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance `npm run db:seed -- --demo` : la page `/connexion` affiche des boutons pour entrer comme étudiant, externe, club, coordinateur ou admin. Ce mode est **ignoré en production** (`NODE_ENV=production`) et ne donne accès qu'aux comptes de démonstration existants.
+
+> Après un `npm run build`, supprime `.next` avant de relancer `npm run dev` (cache de build partagé).
+
 ## Scripts
 
 | Commande | Rôle |
