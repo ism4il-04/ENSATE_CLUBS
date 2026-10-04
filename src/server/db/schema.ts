@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  date,
   integer,
   numeric,
   pgEnum,
@@ -39,6 +40,7 @@ export const typeDecision = pgEnum("type_decision", ["VALIDE", "REFUSE", "MODIF_
 export const typeMedia = pgEnum("type_media", ["AFFICHE", "PLANNING", "PHOTO"]);
 export const statutInscription = pgEnum("statut_inscription", ["PRE_INSCRITE", "CONFIRMEE", "LISTE_ATTENTE", "ANNULEE"]);
 export const sourceInscription = pgEnum("source_inscription", ["EN_LIGNE", "STAND", "MEMBRE"]);
+export const typeTransaction = pgEnum("type_transaction", ["RECETTE", "DEPENSE"]);
 
 // ---------------------------------------------------------------- comptes
 
@@ -295,4 +297,25 @@ export const annonce = pgTable(
     idAuteur: uuid("id_auteur").notNull().references(() => compte.id),
   },
   (t) => [index("annonce_evenement_idx").on(t.idEvenement, t.datePublication)],
+);
+
+// ---------------------------------------------------------------- V2 : trésorerie (RG-21)
+// Lue et écrite UNIQUEMENT via src/server/services/tresorerie.ts, derrière requireFinance().
+
+export const transaction = pgTable(
+  "transaction",
+  {
+    id: uuid("id_transaction").primaryKey().defaultRandom(),
+    type: typeTransaction("type").notNull(),
+    montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    libelle: text("libelle").notNull(),
+    categorie: text("categorie").notNull(),
+    dateOperation: date("date_operation").notNull(),
+    justificatifId: text("justificatif_id"), // « format:public_id » d'un fichier Cloudinary authenticated, jamais une URL
+    dateSaisie: ts("date_saisie").notNull().defaultNow(),
+    idOrganisation: uuid("id_organisation").notNull().references(() => organisation.id),
+    idEvenement: uuid("id_evenement").references(() => evenement.id),
+    idSaisiPar: uuid("id_saisi_par").notNull().references(() => compte.id),
+  },
+  (t) => [check("transaction_montant_chk", sql`${t.montant} > 0`), index("transaction_org_date_idx").on(t.idOrganisation, t.dateOperation)],
 );

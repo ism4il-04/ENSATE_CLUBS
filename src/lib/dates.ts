@@ -39,3 +39,8 @@ export function slugify(text: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 }
+
+/** Date du jour à Tétouan, « AAAA-MM-JJ ». */
+export function aujourdhui() {
+  return utcToZoned(new Date()).date;
+}

@@ -52,6 +52,18 @@ export async function requireOrganisation() {
   return { user, org };
 }
 
+/**
+ * Garde de la trésorerie (RG-21, docs/05 §5) : seul le compte de l'organisation y accède.
+ * COORDINATEUR et ADMIN sont refusés explicitement, quelle que soit l'organisation demandée.
+ * (V2 suivante : un membre TRESORIER ou PRESIDENT de l'organisation.)
+ */
+export async function requireFinance() {
+  const user = await getSessionUser();
+  if (!user) throw new AccessError("NON_AUTHENTIFIE");
+  if (user.role === "COORDINATEUR" || user.role === "ADMIN") throw new AccessError("ACCES_REFUSE");
+  return requireOrganisation();
+}
+
 /** Rôle de l'organisation connectée sur un événement (ou null). Les sous-événements héritent du parent. */
 export async function roleOnEvent(orgId: string, eventId: string) {
   const db = getDb();

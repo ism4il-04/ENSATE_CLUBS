@@ -31,7 +31,7 @@
 - **SESSION_STAND** (**id_session**, secret, date_ouverture, date_expiration, actif, #id_evenement, #id_organisation, #id_ouvreur → COMPTE)
 - **PRESENCE** (**#id_inscription, #id_creneau**, date_checkin, #id_scanneur → COMPTE)
 
-### Trésorerie (V2)
+### Trésorerie (V2, en place)
 
 - **TRANSACTION** (**id_transaction**, type, montant, libelle, categorie, date_operation, justificatif_id, date_saisie, #id_organisation, #id_evenement, #id_saisi_par → COMPTE)
 

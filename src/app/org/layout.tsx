@@ -18,6 +18,7 @@ export default async function OrgLayout({ children }: LayoutProps<"/org">) {
       links={[
         { href: "/org", label: "Mes événements", icon: "ticket", exact: true },
         { href: "/org/evenements/nouveau", label: "Nouvel événement", icon: "grid" },
+        { href: "/org/tresorerie", label: "Trésorerie", icon: "wallet" },
         { href: "/org/profil", label: "Profil du club", icon: "user" },
       ]}
     >
