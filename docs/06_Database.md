@@ -37,9 +37,9 @@
 
 ### Tables ultérieures
 
-- *(V2)* **SUIVI_ORGANISATION** (**#id_compte, #id_organisation**, notifications_actives, date_suivi)
+- *(V2, en place)* **SUIVI_ORGANISATION** (**#id_compte, #id_organisation**, notifications_actives, date_suivi)
 - *(V2)* **NOTIFICATION** (**id_notification**, type, titre, message, lien, lu, date_creation, #id_compte)
-- *(V2)* **ANNONCE** (**id_annonce**, titre, contenu, date_publication, #id_evenement, #id_organisation)
+- *(V2, en place)* **ANNONCE** (**id_annonce**, titre, contenu, cible, destinataires, date_publication, #id_evenement, #id_organisation, #id_auteur)
 - *(V2)* **PERIODE_BLOQUEE** (**id_periode**, libelle, debut, fin, motif, #id_createur → COMPTE)
 - *(V3)* **FEEDBACK** (**#id_inscription**, note, commentaire, date_feedback)
 

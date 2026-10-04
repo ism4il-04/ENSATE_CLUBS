@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { notify, publieParCoordinateur } from "@/server/email/notifications";
+import { notify, nouvelEvenementPourAbonnes, publieParCoordinateur } from "@/server/email/notifications";
 import { AccessError, getSessionUser, requireOrganisation, roleOnEvent } from "@/server/permissions";
 import { PublicationError, savePublication, type PublicationInput } from "@/server/services/publication";
 
@@ -22,6 +22,7 @@ export async function enregistrerPublication(eventId: string, input: Publication
     const { coordinateur } = await assertCanEdit(eventId);
     const r = await savePublication(eventId, input, { publish });
     if (coordinateur && r.nouvellementPublie) notify(() => publieParCoordinateur(eventId));
+    if (r.nouvellementPublie) notify(() => nouvelEvenementPourAbonnes(eventId));
     revalidatePath("/org");
     revalidatePath(`/org/evenements/${eventId}/publication`);
     revalidatePath(`/coord/evenements/${eventId}`);

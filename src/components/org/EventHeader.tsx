@@ -7,7 +7,17 @@ const TABS = [
   ["inscrits", "Inscrits"],
   ["stand", "Stand"],
   ["controle", "Contrôle"],
+  ["annonces", "Annonces"],
 ] as const;
+
+// Inscrits : aussi après la fin ou l'annulation (remboursements, export). Stand et contrôle : événement publié seulement.
+const VISIBLE: Record<(typeof TABS)[number][0], readonly string[]> = {
+  publication: [],
+  inscrits: ["PUBLIE", "TERMINE", "ANNULE"],
+  stand: ["PUBLIE"],
+  controle: ["PUBLIE"],
+  annonces: ["PUBLIE", "TERMINE"],
+};
 
 export function EventHeader({
   id,
@@ -27,7 +37,7 @@ export function EventHeader({
   base?: string;
 }) {
   const st = STATUT_EVENEMENT[statut];
-  const tabs = TABS.filter(([k]) => (k === "publication" ? isPrincipal : statut === "PUBLIE"));
+  const tabs = TABS.filter(([k]) => (k === "publication" ? isPrincipal && (statut === "VALIDE" || statut === "PUBLIE") : VISIBLE[k].includes(statut)));
   return (
     <>
       <Link href={base} className="flex min-h-10 items-center gap-1.5 self-start text-sm font-bold text-muted">

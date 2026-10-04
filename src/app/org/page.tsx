@@ -104,6 +104,11 @@ export default async function OrgDashboard({ searchParams }: PageProps<"/org">) 
                     {evt.statut === "VALIDE" ? "Compléter et publier" : "Publication"}
                   </Link>
                 )}
+                {["TERMINE", "ANNULE"].includes(evt.statut) && evt.structure !== "PROGRAMME" && (
+                  <Link href={`/org/evenements/${evt.id}/inscrits`} className="press flex h-11 items-center rounded-full border border-line-strong px-4 text-sm font-extrabold">
+                    Inscrits
+                  </Link>
+                )}
                 {evt.statut === "PUBLIE" && evt.structure !== "PROGRAMME" && (
                   <>
                     <Link href={`/org/evenements/${evt.id}/inscrits`} className="press flex h-11 items-center rounded-full border border-line-strong px-4 text-sm font-extrabold">

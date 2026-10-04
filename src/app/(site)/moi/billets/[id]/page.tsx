@@ -9,6 +9,7 @@ import { annulerInscription } from "@/server/actions/inscriptions";
 import { getDb, schema as s } from "@/server/db";
 import { requireUser } from "@/server/permissions";
 import { getPersonne, listMyInscriptions } from "@/server/queries/moi";
+import { annoncesPourBillet } from "@/server/services/annonces";
 
 export const metadata: Metadata = { title: "Mon billet" };
 
@@ -26,7 +27,7 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
   const { ins, evt, creneaux, presences, tarif } = item;
 
   const db = getDb();
-  const [personne, lieux, orgs] = await Promise.all([
+  const [personne, lieux, orgs, annonces] = await Promise.all([
     getPersonne(user.id),
     creneaux.length
       ? db
@@ -40,6 +41,7 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
       .from(s.organisationEvenement)
       .innerJoin(s.organisation, eq(s.organisation.id, s.organisationEvenement.idOrganisation))
       .where(and(eq(s.organisationEvenement.idEvenement, evt.idParent ?? evt.id), eq(s.organisationEvenement.role, "PRINCIPAL"))),
+    annoncesPourBillet(evt, ins.statut),
   ]);
 
   const qr = await QRCode.toString(ins.tokenBillet, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0B0C12", light: "#FFFFFF" } });
@@ -120,6 +122,21 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
         })}
       </div>
 
+      {annonces.length > 0 && (
+        <div className="flex flex-col gap-2.5">
+          <h2 className="text-[13px] font-extrabold tracking-widest text-muted uppercase">Annonces de l&apos;organisation</h2>
+          {annonces.map((a) => (
+            <article key={a.id} className="flex flex-col gap-1.5 rounded-[18px] border border-line bg-surface px-4 py-3.5">
+              <span className="text-xs font-bold text-muted">
+                {a.org} · {dayLabel(a.date)} · {timeLabel(a.date)}
+              </span>
+              <span className="font-extrabold">{a.titre}</span>
+              <p className="text-sm leading-relaxed whitespace-pre-line text-soft">{a.contenu}</p>
+            </article>
+          ))}
+        </div>
+      )}
+
       {annule ? (
         <div className="flex gap-3 rounded-[22px] border border-line bg-surface p-4">
           <Icon name="alert" size={20} className="flex-none text-danger" />
@@ -149,6 +166,11 @@ export default async function Billet({ params }: PageProps<"/moi/billets/[id]">)
             Annuler mon inscription
           </button>
         </form>
+      )}
+      {!annule && (
+        <a href={`/evenements/${evt.slug}/agenda.ics`} className="press flex h-12 items-center justify-center gap-2 rounded-full border border-line-strong text-sm font-extrabold">
+          <Icon name="clock" size={16} stroke={2.4} /> Ajouter à mon agenda
+        </a>
       )}
       <p className="text-center text-xs text-faint">Ce billet reste disponible hors connexion une fois ouvert sur ce téléphone.</p>
     </section>

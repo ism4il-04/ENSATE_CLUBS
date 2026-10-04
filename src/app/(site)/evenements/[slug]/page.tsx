@@ -104,7 +104,12 @@ export default async function EvenementPage({ params }: PageProps<"/evenements/[
 
       {isProgramme && (
         <section className="flex flex-col gap-3.5">
-          <h2 className="font-display text-4xl font-extrabold tracking-tight">Les activités</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-4xl font-extrabold tracking-tight">Les activités</h2>
+            <a href={`/evenements/${e.slug}/agenda.ics`} className="press flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-[13px] font-extrabold">
+              <Icon name="clock" size={15} stroke={2.4} /> Ajouter à mon agenda
+            </a>
+          </div>
           <p className="text-muted">Une inscription par activité : chacune a ses tarifs, ses places et son mode d&apos;inscription.</p>
           {e.sousEvenements.map((a) => {
             const st = a.debut ? dateStamp(a.debut) : null;
@@ -134,7 +139,12 @@ export default async function EvenementPage({ params }: PageProps<"/evenements/[
       {!isProgramme && (
         <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
           <section className="flex flex-col gap-3.5">
-            <h2 className="text-[13px] font-extrabold tracking-widest text-muted uppercase">Créneaux</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-[13px] font-extrabold tracking-widest text-muted uppercase">Créneaux</h2>
+              <a href={`/evenements/${e.slug}/agenda.ics`} className="press flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-[13px] font-extrabold">
+                <Icon name="clock" size={15} stroke={2.4} /> Ajouter à mon agenda
+              </a>
+            </div>
             {e.creneaux.map((c, i) => (
               <div key={c.id} className="flex gap-3.5">
                 <div className="flex flex-col items-center">

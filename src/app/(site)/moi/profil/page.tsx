@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { ProfilForm } from "@/components/moi/ProfilForm";
 import { SignOutButton } from "@/components/moi/SignOutButton";
 import { requireUser } from "@/server/permissions";
 import { getPersonne } from "@/server/queries/moi";
+import { listSuivis, peutSuivre } from "@/server/services/suivi";
 
 export const metadata: Metadata = { title: "Mon profil" };
 
@@ -17,7 +19,7 @@ const ROLE: Record<string, string> = {
 
 export default async function Profil() {
   const user = await requireUser("/moi/profil");
-  const [personne, session] = await Promise.all([getPersonne(user.id), auth()]);
+  const [personne, session, suivis] = await Promise.all([getPersonne(user.id), auth(), peutSuivre(user.role) ? listSuivis(user.id) : []]);
   const nom = [personne?.prenom, personne?.nom].filter(Boolean).join(" ") || session?.user?.name || user.email || "";
   const photo = personne?.photoUrl ?? session?.user?.image;
 
@@ -43,6 +45,26 @@ export default async function Profil() {
       </div>
 
       {personne && <ProfilForm telephone={personne.telephone ?? ""} niveau={personne.niveau ?? ""} organisme={personne.organisme ?? ""} externe={user.role === "EXTERNE"} />}
+
+      {peutSuivre(user.role) && (
+        <div className="flex flex-col gap-2.5 rounded-3xl border border-line bg-surface p-4">
+          <span className="font-extrabold">Clubs suivis</span>
+          {suivis.length ? (
+            <div className="flex flex-wrap gap-2">
+              {suivis.map((o) => (
+                <Link key={o.id} href={`/clubs/${o.slug}`} className="press flex h-10 items-center gap-2 rounded-full border border-line-strong py-1 pr-3.5 pl-1 text-sm font-bold">
+                  <span className="grid size-8 place-items-center rounded-full text-[11px] font-extrabold text-ink" style={{ background: o.couleur }}>
+                    {(o.sigle ?? o.nom.slice(0, 2)).toUpperCase().slice(0, 3)}
+                  </span>
+                  {o.nom}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[13px] text-muted">Aucun pour l&apos;instant. Suis un club depuis sa page pour recevoir un email à chaque nouvel événement.</span>
+          )}
+        </div>
+      )}
 
       <SignOutButton />
     </section>

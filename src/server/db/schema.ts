@@ -1,4 +1,4 @@
-// Schéma de la base (V1). Référence : docs/06_Database.md
+// Schéma de la base (V1 + débuts de V2). Référence : docs/06_Database.md
 import { sql } from "drizzle-orm";
 import {
   boolean,
@@ -264,4 +264,35 @@ export const presence = pgTable(
     idScanneur: uuid("id_scanneur").notNull().references(() => compte.id),
   },
   (t) => [primaryKey({ columns: [t.idInscription, t.idCreneau] })],
+);
+
+// ---------------------------------------------------------------- V2 : suivi et annonces
+
+/** Organisations suivies par un participant (BF-17) : email à chaque nouvel événement publié. */
+export const suiviOrganisation = pgTable(
+  "suivi_organisation",
+  {
+    idCompte: uuid("id_compte").notNull().references(() => compte.id, { onDelete: "cascade" }),
+    idOrganisation: uuid("id_organisation").notNull().references(() => organisation.id, { onDelete: "cascade" }),
+    notificationsActives: boolean("notifications_actives").notNull().default(true),
+    dateSuivi: ts("date_suivi").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.idCompte, t.idOrganisation] }), index("suivi_organisation_idx").on(t.idOrganisation)],
+);
+
+/** Annonce envoyée par une organisation aux inscrits d'un événement (BF-45), gardée pour l'historique. */
+export const annonce = pgTable(
+  "annonce",
+  {
+    id: uuid("id_annonce").primaryKey().defaultRandom(),
+    titre: text("titre").notNull(),
+    contenu: text("contenu").notNull(),
+    cible: text("cible").notNull().default("TOUS"), // CONFIRMES | INSCRITS | TOUS
+    destinataires: integer("destinataires").notNull(),
+    datePublication: ts("date_publication").notNull().defaultNow(),
+    idEvenement: uuid("id_evenement").notNull().references(() => evenement.id, { onDelete: "cascade" }),
+    idOrganisation: uuid("id_organisation").notNull().references(() => organisation.id),
+    idAuteur: uuid("id_auteur").notNull().references(() => compte.id),
+  },
+  (t) => [index("annonce_evenement_idx").on(t.idEvenement, t.datePublication)],
 );

@@ -4,7 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { dateStamp, rangeLabel } from "@/lib/format";
+import { SuivreBouton } from "@/components/events/SuivreBouton";
+import { getSessionUser } from "@/server/permissions";
 import { getClub } from "@/server/queries/clubs";
+import { estSuivie, peutSuivre } from "@/server/services/suivi";
 import { splitByPeriod } from "@/server/queries/moi";
 
 export async function generateMetadata({ params }: PageProps<"/clubs/[slug]">): Promise<Metadata> {
@@ -17,6 +20,8 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
   const c = await getClub(slug);
   if (!c) notFound();
   const { org, events, collabs } = c;
+  const user = await getSessionUser();
+  const suivi = user && peutSuivre(user.role) ? await estSuivie(user.id, org.id) : false;
   const tab = (await searchParams).periode === "passes" ? "passes" : "avenir";
   const { avenir, passes } = splitByPeriod(events);
   const list = (tab === "avenir" ? avenir : passes).sort((a, b) => ((a.debut?.getTime() ?? 0) - (b.debut?.getTime() ?? 0)) * (tab === "avenir" ? 1 : -1));
@@ -51,7 +56,8 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
               <h1 className="font-display text-[clamp(34px,4.5vw,52px)] leading-none font-extrabold tracking-[-0.045em]">{org.nom}</h1>
             </div>
           </div>
-          <div className="flex gap-2 pb-1.5">
+          <div className="flex flex-wrap items-start gap-2 pb-1.5">
+            {(!user || peutSuivre(user.role)) && <SuivreBouton orgId={org.id} suivi={suivi} connecte={!!user} retour={`/clubs/${slug}`} nom={org.nom} />}
             {org.instagram && (
               <a href={`https://instagram.com/${org.instagram.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="press flex h-12 items-center rounded-full border border-line-strong px-4 text-sm font-bold">
                 {org.instagram}

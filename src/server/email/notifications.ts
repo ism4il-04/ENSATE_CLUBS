@@ -134,6 +134,65 @@ export async function creeParCoordinateur(eventId: string) {
   ]);
 }
 
+/** Annonce d'une organisation aux inscrits (BF-45). Les destinataires viennent de la transaction qui l'a enregistrée. */
+export async function annonceEnvoyee(annonceId: string, destinataires: { idInscription: string; email: string; prenom: string | null }[]) {
+  const [a] = await getDb()
+    .select({ titre: s.annonce.titre, contenu: s.annonce.contenu, idEvenement: s.annonce.idEvenement, org: s.organisation.nom, couleur: s.organisation.couleur })
+    .from(s.annonce)
+    .innerJoin(s.organisation, eq(s.organisation.id, s.annonce.idOrganisation))
+    .where(eq(s.annonce.id, annonceId))
+    .limit(1);
+  const c = a ? await eventContext(a.idEvenement) : null;
+  if (!a || !c) return;
+  const paragraphes = a.contenu.split(/\n\s*\n/).map((p) => p.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean);
+  await send(
+    destinataires.map((r) =>
+      compose(r.email, {
+        subject: `${c.titre} · ${a.titre}`,
+        title: a.titre,
+        lines: [hello(r.prenom), ...paragraphes],
+        cta: billet(r.idInscription),
+        accent: c.evt.couleur,
+        note: `Message de ${a.org} aux inscrits de « ${c.titre} ».${c.contact ? ` Contact : ${c.contact}.` : ""}`,
+      }),
+    ),
+  );
+}
+
+/** Nouvel événement publié : prévient les participants qui suivent l'une des organisations (BF-17). */
+export async function nouvelEvenementPourAbonnes(eventId: string) {
+  const c = await eventContext(eventId);
+  if (!c || c.evt.statut !== "PUBLIE") return;
+  const racine = c.parent ?? c.evt;
+  const rows = await getDb()
+    .selectDistinctOn([s.compte.id], { email: s.compte.email, role: s.compte.role, prenom: s.personne.prenom, org: s.organisation.nom, slug: s.organisation.slug })
+    .from(s.suiviOrganisation)
+    .innerJoin(s.compte, eq(s.compte.id, s.suiviOrganisation.idCompte))
+    .innerJoin(s.organisation, eq(s.organisation.id, s.suiviOrganisation.idOrganisation))
+    .leftJoin(s.personne, eq(s.personne.idCompte, s.compte.id))
+    .where(
+      and(
+        inArray(s.suiviOrganisation.idOrganisation, c.orgs.map((o) => o.id)),
+        eq(s.suiviOrganisation.notificationsActives, true),
+        eq(s.compte.statut, "ACTIF"),
+        inArray(s.compte.role, racine.ouvertExternes ? ["ETUDIANT", "EXTERNE"] : ["ETUDIANT"]),
+      ),
+    );
+  await send(
+    rows.map((r) =>
+      compose(r.email, {
+        subject: `Nouvel événement : ${c.titre}`,
+        title: `${r.org} publie un nouvel événement`,
+        lines: [hello(r.prenom), `« ${c.titre} » vient d'être publié.${c.evt.descriptionCourte ? ` ${c.evt.descriptionCourte}` : ""}`],
+        details: c.quand,
+        cta: { label: "Voir l'événement", path: `/evenements/${racine.slug}` },
+        accent: c.evt.couleur,
+        note: `Tu reçois cet email car tu suis ${r.org}. Pour ne plus le recevoir, clique sur « Suivi » sur la page du club.`,
+      }),
+    ),
+  );
+}
+
 /** Événement publié par le coordinateur pour le compte d'un club (BF-68). */
 export async function publieParCoordinateur(eventId: string) {
   const c = await eventContext(eventId);
