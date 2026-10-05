@@ -4,6 +4,19 @@
 
 ---
 
+## 0. État de l'implémentation (V2)
+
+En place sous `/api/v1` (code : `src/app/api/v1`, socle commun `src/server/api`) :
+
+- **Public** : `GET /evenements` (filtres `categorie`, `organisation`, `gratuit`, `du`, `au`, pagination), `GET /evenements/{slug}`, `GET /organisations`, `GET /organisations/{slug}`, `GET /lieux`.
+- **Participant** : `GET /moi`, `PATCH /moi/profil`, `POST /evenements/{slug}/inscriptions` (le slug remplace l'identifiant), `GET /moi/inscriptions`, `GET | DELETE /moi/inscriptions/{id}` (le billet contient le jeton du QR).
+- **Organisation (terrain)** : `GET /org` (accès et capacités), `GET /org/evenements`, `GET /org/evenements/{id}/inscriptions`, `POST /org/evenements/{id}/stand`, `GET /org/stand/{session}/jeton`, `DELETE /org/stand/{session}`, `POST | DELETE /org/inscriptions/{id}/paiement`, `POST /org/paiements/scan` (`{ idEvenement, tokenBillet, idTarif }`), `POST /org/checkin` (`{ idCreneau, tokenBillet | idInscription }`).
+- Les droits suivent les rôles d'organisation (`caisse` pour le terrain) ; un appel hors périmètre renvoie 404 sans rien révéler.
+- **Écritures** : corps JSON obligatoire (415 `JSON_REQUIS`) et même origine (403 `ORIGINE_REFUSEE`), en défense contre le CSRF.
+- Les dates sont en ISO 8601 UTC (`…Z`).
+
+À venir : routes de création et de publication d'événements, coordinateur, administrateur et trésorerie. Ces écrans restent utilisés sur ordinateur via l'interface web. Une application native nécessiterait en plus une authentification par jeton (aujourd'hui : cookie de session, adapté à la PWA).
+
 ## 1. Conventions
 
 - **Format** : JSON, en UTF-8. Les dates sont en ISO 8601 avec fuseau (`2026-10-14T14:00:00+01:00`).

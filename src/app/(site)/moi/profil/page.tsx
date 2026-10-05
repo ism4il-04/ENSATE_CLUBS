@@ -7,6 +7,7 @@ import { requireUser } from "@/server/permissions";
 import { getPersonne } from "@/server/queries/moi";
 import { listSuivis, peutSuivre } from "@/server/services/suivi";
 import { mesOrganisations } from "@/server/permissions";
+import { InstallerApp } from "@/components/pwa/InstallerApp";
 
 export const metadata: Metadata = { title: "Mon profil" };
 
@@ -76,6 +77,8 @@ export default async function Profil() {
           )}
         </div>
       )}
+
+      <InstallerApp />
 
       <SignOutButton />
     </section>

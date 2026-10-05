@@ -3,6 +3,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { Icon } from "@/components/ui/Icon";
 import { CATEGORIES, dateStamp, type CategorieKey } from "@/lib/format";
 import { listPublishedEvents } from "@/server/queries/evenements";
+import { InstallerApp } from "@/components/pwa/InstallerApp";
 
 const FILTERS: [string, string][] = [
   ["", "Tous"],
@@ -41,6 +42,7 @@ export default async function Accueil({ searchParams }: PageProps<"/">) {
 
   return (
     <>
+      <InstallerApp bandeau />
       <section className="grid items-stretch gap-7 [grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))]">
         <div className="animate-rise flex flex-col justify-center gap-5.5">
           <h1 className="font-display text-[clamp(44px,6.4vw,84px)] leading-[0.92] font-extrabold tracking-[-0.045em]">

@@ -19,19 +19,11 @@ import {
   marquerPaye,
   trouverParBillet,
 } from "@/server/services/caisse";
+import { MESSAGES_CAISSE } from "@/lib/erreurs";
 
 export type CaisseResult = { ok: boolean; message: string };
 
-const MESSAGES: Record<string, string> = {
-  INTROUVABLE: "Inscription introuvable.",
-  EVENEMENT_COMPLET: "Complet : toutes les places publiques sont confirmées.",
-  TARIF_INVALIDE: "Choisis d'abord un tarif.",
-  STATUT_INVALIDE: "Cette inscription a déjà changé : actualise la page.",
-  PAIEMENT_AUTRE_ORGANISATION: "Ce paiement a été encaissé par une autre organisation.",
-  PLACES_MEMBRES_EPUISEES: "Toutes les places membres sont attribuées.",
-  ETUDIANT_INTROUVABLE: "Étudiant introuvable.",
-  DEJA_INSCRIT: "Cet étudiant est déjà inscrit.",
-};
+const MESSAGES = MESSAGES_CAISSE;
 
 /** Organisation principale ou partenaire de l'événement. */
 async function organiser(eventId: string, cap: Capacite = "caisse") {

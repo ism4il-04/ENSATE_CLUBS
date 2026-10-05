@@ -111,10 +111,16 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
 | `npm run db:studio` | Explorer la base |
 | `npm run icons` | Régénère les icônes PWA |
 
+## API REST (`/api/v1`)
+
+Pour la PWA, le scan au stand ou une future application : événements publics, inscriptions et billets du participant, et opérations de terrain du club (inscrits, stand, encaissement, scan, contrôle). Détails et état : [docs/07_API.md](docs/07_API.md). Authentification par le cookie de session ; les écritures exigent du JSON de la même origine.
+
 ## PWA
 
 - Manifest : `src/app/manifest.ts` · service worker : `public/sw.js` (enregistré en production uniquement).
-- Les billets ouverts une fois restent consultables **hors ligne** ; ils sont effacés de l'appareil à la déconnexion.
+- **Billets hors ligne** : à l'ouverture de « Mes billets », chaque billet à venir est enregistré sur l'appareil, même jamais ouvert. Les billets sont effacés à la déconnexion.
+- **Installation** : bouton « Installer l'application » (Android, ordinateur) ou instructions pour iPhone (Safari : Partager → Sur l'écran d'accueil), sur l'accueil mobile et dans le profil.
+- Bandeau « Hors ligne », invite « Nouvelle version disponible », raccourcis (Mes billets, Événements, Espace club).
 - L'installation sur téléphone exige HTTPS : teste-la sur un déploiement Vercel (ou `next dev --experimental-https`).
 - **Application mobile plus tard** : la logique métier est dans `src/server/services` ; une app (Expo / React Native ou Capacitor) pourra s'appuyer sur des routes `/api/v1` (contrat dans `docs/07_API.md`).
 

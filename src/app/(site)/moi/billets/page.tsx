@@ -3,6 +3,7 @@ import Link from "next/link";
 import { dateStamp, rangeLabel } from "@/lib/format";
 import { requireUser } from "@/server/permissions";
 import { listMyInscriptions, splitByPeriod } from "@/server/queries/moi";
+import { PrecacheBillets } from "@/components/pwa/PrecacheBillets";
 
 export const metadata: Metadata = { title: "Mes billets" };
 
@@ -20,6 +21,7 @@ export default async function MesBillets({ searchParams }: PageProps<"/moi/bille
 
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+      <PrecacheBillets urls={avenir.filter((x) => x.evt.statut !== "ANNULE").map((x) => `/moi/billets/${x.ins.id}`)} />
       <div className="flex items-end justify-between">
         <h1 className="font-display text-[40px] leading-none font-extrabold tracking-[-0.045em]">Mes billets</h1>
         <span className="text-sm font-bold text-muted">{avenir.length} à venir</span>

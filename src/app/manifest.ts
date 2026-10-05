@@ -22,6 +22,8 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: "Mes billets", url: "/moi/billets", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
       { name: "Événements", url: "/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      { name: "Espace club", short_name: "Club", description: "Stand, caisse et contrôle d'entrée", url: "/org", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
     ],
+    prefer_related_applications: false,
   };
 }

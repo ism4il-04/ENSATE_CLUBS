@@ -11,8 +11,8 @@ export default function HorsLigne() {
       </span>
       <h1 className="font-display text-4xl font-extrabold tracking-tight">Pas de réseau</h1>
       <p className="text-muted">
-        Cette page n&apos;est pas disponible hors ligne. Les billets déjà ouverts sur ce téléphone restent accessibles
-        depuis « Mes billets ».
+        Cette page n&apos;est pas disponible hors ligne. Tes billets à venir, enregistrés sur ce téléphone, restent
+        accessibles depuis « Mes billets ».
       </p>
       <Link href="/moi/billets" className="press rounded-full bg-accent px-6 py-3 font-extrabold text-ink">
         Mes billets

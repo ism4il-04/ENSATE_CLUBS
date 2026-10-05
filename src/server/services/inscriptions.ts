@@ -69,6 +69,12 @@ export async function inscrire(opts: {
       if (!evt.inscriptionsOuvertes) throw new InscriptionError("INSCRIPTIONS_FERMEES");
     }
 
+    const [existing] = await tx
+      .select()
+      .from(s.inscription)
+      .where(and(eq(s.inscription.idEvenement, evt.id), eq(s.inscription.idCompte, opts.compteId)));
+    if (existing && existing.statut !== "ANNULEE") throw new InscriptionError("DEJA_INSCRIT");
+
     // RG-28 : téléphone obligatoire, enregistré dans le profil.
     if (evt.telephoneRequis) {
       const [p] = await tx.select({ tel: s.personne.telephone }).from(s.personne).where(eq(s.personne.idCompte, opts.compteId));
@@ -78,12 +84,6 @@ export async function inscrire(opts: {
         await tx.update(s.personne).set({ telephone: tel }).where(eq(s.personne.idCompte, opts.compteId));
       }
     }
-
-    const [existing] = await tx
-      .select()
-      .from(s.inscription)
-      .where(and(eq(s.inscription.idEvenement, evt.id), eq(s.inscription.idCompte, opts.compteId)));
-    if (existing && existing.statut !== "ANNULEE") throw new InscriptionError("DEJA_INSCRIT");
 
     let statut: "CONFIRMEE" | "LISTE_ATTENTE" | "PRE_INSCRITE";
     if (evt.gratuit) {
