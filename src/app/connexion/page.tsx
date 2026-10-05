@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth, DEV_LOGIN } from "@/auth";
@@ -118,7 +119,15 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
           </div>
           <p className="text-xs leading-relaxed text-faint">
             Ton nom et ta photo de profil Google sont affichés sur la plateforme. Ton numéro de téléphone n&apos;est demandé que si un
-            événement l&apos;exige.
+            événement l&apos;exige. En continuant, tu acceptes les{" "}
+            <Link href="/conditions" className="underline underline-offset-2 hover:text-paper">
+              conditions d&apos;utilisation
+            </Link>{" "}
+            et la{" "}
+            <Link href="/confidentialite" className="underline underline-offset-2 hover:text-paper">
+              politique de confidentialité
+            </Link>
+            .
           </p>
         </div>
       </main>

@@ -47,7 +47,7 @@ ${details}
 ${href ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 18px"><tr><td style="background:#c6f24e;border-radius:999px"><a href="${esc(href)}" style="display:inline-block;padding:13px 22px;font-size:15px;font-weight:800;color:#0b0c12;text-decoration:none">${esc(m.cta!.label)}</a></td></tr></table>` : ""}
 ${m.note ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#6b6e7e">${esc(m.note)}</p>` : ""}
 </td></tr>
-<tr><td style="padding:16px 24px 22px;border-top:1px solid #e7e6e1;font-size:12px;line-height:1.5;color:#8b8ea0">Email automatique de la plateforme parascolaire de l'ENSA de Tétouan. Merci de ne pas y répondre.<br><a href="${esc(base)}" style="color:#8b8ea0">${esc(base.replace(/^https?:\/\//, ""))}</a></td></tr>
+<tr><td style="padding:16px 24px 22px;border-top:1px solid #e7e6e1;font-size:12px;line-height:1.5;color:#8b8ea0">Email automatique de la plateforme parascolaire de l'ENSA de Tétouan. Merci de ne pas y répondre.<br><a href="${esc(base)}" style="color:#8b8ea0">${esc(base.replace(/^https?:\/\//, ""))}</a> · <a href="${esc(base)}/confidentialite" style="color:#8b8ea0">Confidentialité</a></td></tr>
 </table></td></tr></table></body></html>`;
 
   const text = [
