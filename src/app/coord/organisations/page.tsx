@@ -5,6 +5,7 @@ import { dayLabel } from "@/lib/format";
 import { creerOrganisationAction, modifierOrganisationAction, organisationStatutAction } from "@/server/actions/admin";
 import { listOrganisationsAdmin } from "@/server/services/admin";
 import { requirePageRole } from "@/server/permissions";
+import { OrgBadge } from "@/components/site/OrgBadge";
 
 export const metadata: Metadata = { title: "Organisations" };
 
@@ -34,7 +35,7 @@ function OrgFields({ org, email }: { org?: { type: string; nom: string; sigle: s
       </label>
       <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
         Sigle (facultatif)
-        <input name="sigle" maxLength={6} defaultValue={org?.sigle ?? ""} className={field} />
+        <input name="sigle" maxLength={8} defaultValue={org?.sigle ?? ""} className={field} />
       </label>
       <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
         Adresse Google du compte
@@ -59,9 +60,7 @@ export default async function Organisations() {
             return (
               <article key={org.id} className={`animate-rise flex flex-col gap-3 rounded-[22px] border border-line bg-surface p-4 ${active ? "" : "opacity-60"}`} style={{ animationDelay: `${i * 30}ms` }}>
                 <div className="flex items-center gap-3">
-                  <span className={`grid size-12 flex-none place-items-center rounded-[15px] font-extrabold text-ink ${(org.sigle ?? "").length > 3 ? "text-[11px]" : ""}`} style={{ background: org.couleur }}>
-                    {(org.sigle ?? org.nom.slice(0, 2)).toUpperCase()}
-                  </span>
+                  <OrgBadge nom={org.nom} sigle={org.sigle} couleur={org.couleur} logoUrl={org.logoUrl} size={48} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-extrabold">{org.nom}</div>
                     <div className="text-xs font-extrabold tracking-wider text-muted uppercase">{org.type === "CLUB" ? "Club" : "Association"}</div>

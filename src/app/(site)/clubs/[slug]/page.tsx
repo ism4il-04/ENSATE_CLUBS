@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { imageUrl } from "@/lib/images";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
@@ -9,6 +8,7 @@ import { getSessionUser } from "@/server/permissions";
 import { getClub } from "@/server/queries/clubs";
 import { estSuivie, peutSuivre } from "@/server/services/suivi";
 import { splitByPeriod } from "@/server/queries/moi";
+import { OrgBadge } from "@/components/site/OrgBadge";
 
 export async function generateMetadata({ params }: PageProps<"/clubs/[slug]">): Promise<Metadata> {
   const c = await getClub((await params).slug);
@@ -43,13 +43,8 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
         </div>
         <div className="-mt-16 flex flex-wrap items-end justify-between gap-4.5 px-[clamp(16px,3vw,32px)]">
           <div className="flex flex-wrap items-end gap-4.5">
-            <span className="relative grid size-32 place-items-center overflow-hidden rounded-[34px] border-[6px] border-ink bg-ink font-display text-5xl font-extrabold tracking-tight shadow-[0_0_0_2px_#2b2e40]" style={{ color: org.couleur }}>
-              {org.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageUrl(org.logoUrl, 200)} alt={`Logo ${org.nom}`} className="size-full object-cover" />
-              ) : (
-                initials
-              )}
+            <span className="relative z-10 rounded-[38px] border-[6px] border-ink shadow-[0_0_0_2px_#2b2e40]">
+              <OrgBadge nom={org.nom} sigle={initials} couleur={org.couleur} logoUrl={org.logoUrl} size={116} />
             </span>
             <div className="flex flex-col gap-1.5 pb-1.5">
               <span className="self-start rounded-full border border-line-strong px-3 py-1 text-xs font-extrabold tracking-wider uppercase">{org.type === "CLUB" ? "Club" : "Association"}</span>
@@ -61,6 +56,11 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
             {org.instagram && (
               <a href={`https://instagram.com/${org.instagram.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="press flex h-12 items-center rounded-full border border-line-strong px-4 text-sm font-bold">
                 {org.instagram}
+              </a>
+            )}
+            {org.tiktok && (
+              <a href={`https://www.tiktok.com/@${org.tiktok.replace(/^@/, "")}`} target="_blank" rel="noopener noreferrer" className="press flex h-12 items-center rounded-full border border-line-strong px-4 text-sm font-bold">
+                TikTok
               </a>
             )}
             {org.linkedin && (
@@ -130,9 +130,7 @@ export default async function Club({ params, searchParams }: PageProps<"/clubs/[
               <div className="flex flex-wrap gap-2">
                 {collabs.map((p) => (
                   <Link key={p.slug} href={`/clubs/${p.slug}`} className="press flex h-11 items-center gap-2 rounded-full bg-surface-2 pr-3.5 pl-1.5 text-sm font-bold">
-                    <span className="grid size-8 place-items-center rounded-[10px] text-xs font-extrabold text-ink" style={{ background: p.couleur }}>
-                      {(p.sigle ?? p.nom.slice(0, 2)).toUpperCase()}
-                    </span>
+                    <OrgBadge nom={p.nom} sigle={p.sigle} couleur={p.couleur} logoUrl={p.logoUrl} size={32} />
                     {p.nom}
                   </Link>
                 ))}

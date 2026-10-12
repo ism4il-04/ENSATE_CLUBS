@@ -27,6 +27,7 @@ async function enrich(eventIds: string[]) {
         sigle: s.organisation.sigle,
         slug: s.organisation.slug,
         couleur: s.organisation.couleur,
+        logoUrl: s.organisation.logoUrl,
         emailContact: s.organisation.emailContact,
         instagram: s.organisation.instagram,
       })

@@ -9,6 +9,7 @@ import { CATEGORIES, dateStamp, dayLabel, priceLabel, rangeLabel, timeLabel, typ
 import { getSessionUser } from "@/server/permissions";
 import { getPublicEvent } from "@/server/queries/evenements";
 import { getMyInscription, getPersonne } from "@/server/queries/moi";
+import { OrgBadge } from "@/components/site/OrgBadge";
 
 export async function generateMetadata({ params }: PageProps<"/evenements/[slug]">): Promise<Metadata> {
   const e = await getPublicEvent((await params).slug);
@@ -59,9 +60,7 @@ export default async function EvenementPage({ params }: PageProps<"/evenements/[
             Organisé par
             {e.orgs.map((o) => (
               <Link key={o.id} href={`/clubs/${o.slug}`} className="flex h-9 items-center gap-2 rounded-full border border-line bg-surface pr-3 pl-1 font-bold text-paper">
-                <span className="grid size-7 place-items-center rounded-lg text-[11px] font-extrabold text-ink" style={{ background: o.couleur }}>
-                  {o.sigle ?? o.nom.slice(0, 2)}
-                </span>
+                <OrgBadge nom={o.nom} sigle={o.sigle} couleur={o.couleur} logoUrl={o.logoUrl} size={28} />
                 {o.nom}
               </Link>
             ))}

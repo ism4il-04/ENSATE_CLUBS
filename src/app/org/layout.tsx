@@ -9,7 +9,7 @@ export default async function OrgLayout({ children }: LayoutProps<"/org">) {
   const autres = (await mesOrganisations(user.id, user.role)).map((x) => ({ id: x.org.id, nom: x.org.nom }));
   return (
     <SpaceShell
-      identity={{ initials: org.sigle ?? org.nom.slice(0, 2).toUpperCase(), name: org.nom, sub: ACCES[acces], color: org.couleur }}
+      identity={{ initials: org.sigle ?? org.nom.slice(0, 2).toUpperCase(), name: org.nom, sub: ACCES[acces], color: org.couleur, logoUrl: org.logoUrl }}
       switcher={autres.length > 1 ? <OrgSwitcher orgs={autres} active={org.id} /> : undefined}
       navLabel="Espace organisation"
       links={[

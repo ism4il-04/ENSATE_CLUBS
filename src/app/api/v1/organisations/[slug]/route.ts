@@ -15,7 +15,7 @@ export const GET = api(
       couleur: org.couleur,
       logoUrl: org.logoUrl,
       description: org.description,
-      contact: { email: org.emailContact, telephone: org.telephoneContact, instagram: org.instagram, linkedin: org.linkedin },
+      contact: { email: org.emailContact, telephone: org.telephoneContact, instagram: org.instagram, tiktok: org.tiktok, linkedin: org.linkedin },
       evenements: events.map((e) => ({ slug: e.slug, titre: e.titre, statut: e.statut, categorie: e.categorie, couleur: e.couleur, debut: e.debut, fin: e.fin })),
       collaborations: collabs.map((p) => ({ nom: p.nom, slug: p.slug })),
     };

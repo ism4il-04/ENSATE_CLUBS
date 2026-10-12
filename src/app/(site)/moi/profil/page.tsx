@@ -8,6 +8,7 @@ import { getPersonne } from "@/server/queries/moi";
 import { listSuivis, peutSuivre } from "@/server/services/suivi";
 import { mesOrganisations } from "@/server/permissions";
 import { InstallerApp } from "@/components/pwa/InstallerApp";
+import { OrgBadge } from "@/components/site/OrgBadge";
 
 export const metadata: Metadata = { title: "Mon profil" };
 
@@ -65,9 +66,7 @@ export default async function Profil() {
             <div className="flex flex-wrap gap-2">
               {suivis.map((o) => (
                 <Link key={o.id} href={`/clubs/${o.slug}`} className="press flex h-10 items-center gap-2 rounded-full border border-line-strong py-1 pr-3.5 pl-1 text-sm font-bold">
-                  <span className="grid size-8 place-items-center rounded-full text-[11px] font-extrabold text-ink" style={{ background: o.couleur }}>
-                    {(o.sigle ?? o.nom.slice(0, 2)).toUpperCase().slice(0, 3)}
-                  </span>
+                  <OrgBadge nom={o.nom} sigle={o.sigle} couleur={o.couleur} logoUrl={o.logoUrl} size={32} />
                   {o.nom}
                 </Link>
               ))}

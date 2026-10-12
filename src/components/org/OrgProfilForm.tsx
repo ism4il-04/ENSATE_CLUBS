@@ -18,6 +18,7 @@ type Org = {
   telephoneContact: string | null;
   instagram: string | null;
   linkedin: string | null;
+  tiktok: string | null;
   logoUrl: string | null;
 };
 
@@ -38,7 +39,7 @@ export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) 
           </p>
           <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
             Sigle
-            <input name="sigle" value={sigle} onChange={(e) => setSigle(e.target.value)} maxLength={6} className={input} />
+            <input name="sigle" value={sigle} onChange={(e) => setSigle(e.target.value)} maxLength={8} className={input} />
           </label>
           <label className="flex flex-col gap-1.5 text-[13px] font-bold text-muted">
             Description
@@ -65,6 +66,7 @@ export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) 
                 ["emailContact", "Email de contact", org.emailContact, "club@exemple.com"],
                 ["telephoneContact", "Téléphone de contact", org.telephoneContact, "06 00 00 00 00"],
                 ["instagram", "Instagram", org.instagram, "@nomduclub"],
+                ["tiktok", "TikTok", org.tiktok, "@nomduclub"],
                 ["linkedin", "LinkedIn", org.linkedin, "https://www.linkedin.com/company/…"],
               ] as const
             ).map(([name, label, value, ph]) => (
@@ -90,7 +92,7 @@ export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) 
         <div className="overflow-hidden rounded-[26px] border border-line bg-surface">
           <div className="relative h-32 overflow-hidden" style={{ background: couleur }}>
             <span className="absolute -right-3 -bottom-8 font-display text-[110px] leading-none font-extrabold tracking-[-0.06em] text-ink">{(sigle || org.nom.slice(0, 2)).toUpperCase()}</span>
-            {logo.startsWith("https://") && (
+            {/^(https:\/\/|\/logos\/)/.test(logo) && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imageUrl(logo, 160)} alt="" className="absolute top-4 left-4 size-14 rounded-2xl border-2 border-ink object-cover" />
             )}

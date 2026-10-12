@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/site/Logo";
+import { OrgBadge } from "@/components/site/OrgBadge";
 import { SpaceNav, type SpaceLink } from "./SpaceNav";
 
 /** Mise en page des espaces club / coordinateur / admin : menu latéral qui passe au-dessus sur téléphone. */
@@ -10,7 +11,7 @@ export function SpaceShell({
   navLabel,
   children,
 }: {
-  identity: { initials: string; name: string; sub: string; color: string };
+  identity: { initials: string; name: string; sub: string; color: string; logoUrl?: string | null };
   switcher?: React.ReactNode;
   links: SpaceLink[];
   navLabel: string;
@@ -21,9 +22,7 @@ export function SpaceShell({
       <aside className="flex flex-[1_1_248px] flex-col gap-5.5 border-b border-line p-4.5 md:max-w-[280px] md:border-r md:border-b-0">
         <Logo />
         <div className="flex items-center gap-2.5 rounded-2xl border border-line bg-surface p-2.5">
-          <span className="grid size-10 flex-none place-items-center rounded-xl text-sm font-extrabold text-ink" style={{ background: identity.color }}>
-            {identity.initials}
-          </span>
+          <OrgBadge nom={identity.name} sigle={identity.initials} couleur={identity.color} logoUrl={identity.logoUrl} size={40} />
           <div className="min-w-0">
             <div className="truncate text-sm font-extrabold">{identity.name}</div>
             <div className="text-xs text-muted">{identity.sub}</div>

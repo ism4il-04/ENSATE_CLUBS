@@ -34,7 +34,7 @@ export async function definirSuivi(compteId: string, orgId: string, suivre: bool
 
 export async function listSuivis(compteId: string) {
   return getDb()
-    .select({ id: s.organisation.id, nom: s.organisation.nom, slug: s.organisation.slug, sigle: s.organisation.sigle, couleur: s.organisation.couleur })
+    .select({ id: s.organisation.id, nom: s.organisation.nom, slug: s.organisation.slug, sigle: s.organisation.sigle, couleur: s.organisation.couleur, logoUrl: s.organisation.logoUrl })
     .from(s.suiviOrganisation)
     .innerJoin(s.organisation, eq(s.organisation.id, s.suiviOrganisation.idOrganisation))
     .where(and(eq(s.suiviOrganisation.idCompte, compteId), eq(s.organisation.statut, "ACTIVE")))

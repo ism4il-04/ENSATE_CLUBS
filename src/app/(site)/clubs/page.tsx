@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { listClubs } from "@/server/queries/clubs";
+import { imageUrl } from "@/lib/images";
 
 export const metadata: Metadata = { title: "Clubs et associations" };
 
@@ -62,9 +63,14 @@ export default async function Clubs({ searchParams }: PageProps<"/clubs">) {
             style={{ animationDelay: `${i * 50}ms` }}
           >
             <div className="relative h-32 overflow-hidden text-ink" style={{ background: o.couleur }}>
-              <span aria-hidden className="absolute -right-3 -bottom-9 font-display text-[130px] leading-none font-extrabold tracking-[-0.06em] transition-transform duration-500 group-hover:-translate-x-3 group-hover:-rotate-3">
-                {(o.sigle ?? o.nom.slice(0, 2)).toUpperCase()}
-              </span>
+              {o.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl(o.logoUrl, 400)} alt="" className="absolute inset-y-3 right-4 h-[calc(100%-24px)] w-[55%] object-contain object-right transition-transform duration-500 group-hover:scale-105" />
+              ) : (
+                <span aria-hidden className="absolute -right-3 -bottom-9 font-display text-[130px] leading-none font-extrabold tracking-[-0.06em] whitespace-nowrap transition-transform duration-500 group-hover:-translate-x-3 group-hover:-rotate-3">
+                  {(o.sigle ?? o.nom.slice(0, 2)).toUpperCase()}
+                </span>
+              )}
               <span className="absolute top-4 left-4 rounded-full bg-ink px-3 py-1.5 text-[11px] font-extrabold tracking-wider text-paper uppercase">
                 {o.type === "CLUB" ? "Club" : "Association"}
               </span>

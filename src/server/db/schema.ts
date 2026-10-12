@@ -81,6 +81,7 @@ export const organisation = pgTable("organisation", {
   telephoneContact: text("telephone_contact"),
   instagram: text("instagram"),
   linkedin: text("linkedin"),
+  tiktok: text("tiktok"),
   statut: statutOrganisation("statut").notNull().default("ACTIVE"),
   dateCreation: ts("date_creation").notNull().defaultNow(),
   idCompte: uuid("id_compte").notNull().unique().references(() => compte.id),

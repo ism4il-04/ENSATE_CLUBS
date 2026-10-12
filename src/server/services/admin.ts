@@ -33,7 +33,7 @@ export async function listOrganisationsAdmin() {
 export const OrgSchema = z.object({
   type: z.enum(["CLUB", "ASSOCIATION"]),
   nom: z.string().trim().min(3, "Nom trop court.").max(80),
-  sigle: z.string().trim().max(6).optional().default(""),
+  sigle: z.string().trim().max(8, "Sigle : 8 caractères maximum.").optional().default(""),
   email,
 });
 

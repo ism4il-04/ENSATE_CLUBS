@@ -34,7 +34,7 @@ export const getClub = cache(async (slug: string) => {
     ? await Promise.all([
         db.select({ id: s.evenement.id, idParent: s.evenement.idParent }).from(s.evenement).where(inArray(s.evenement.idParent, ids)),
         db
-          .select({ idEvenement: s.organisationEvenement.idEvenement, nom: s.organisation.nom, slug: s.organisation.slug, couleur: s.organisation.couleur, sigle: s.organisation.sigle })
+          .select({ idEvenement: s.organisationEvenement.idEvenement, nom: s.organisation.nom, slug: s.organisation.slug, couleur: s.organisation.couleur, sigle: s.organisation.sigle, logoUrl: s.organisation.logoUrl })
           .from(s.organisationEvenement)
           .innerJoin(s.organisation, eq(s.organisation.id, s.organisationEvenement.idOrganisation))
           .where(and(inArray(s.organisationEvenement.idEvenement, ids), ne(s.organisationEvenement.idOrganisation, org.id))),

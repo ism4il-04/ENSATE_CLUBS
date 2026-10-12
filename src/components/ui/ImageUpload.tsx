@@ -100,7 +100,7 @@ export function ImageUpload({
       <span>{label}</span>
       {name && <input type="hidden" name={name} value={value} />}
       <div className="flex flex-wrap items-center gap-3">
-        {value.startsWith("https://") ? (
+        {/^(https:\/\/|\/logos\/)/.test(value) ? (
           // Aperçu dans l'espace club : simple <img>, l'image peut venir de n'importe quel hôte https.
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl(value, 240)} alt="" className="h-20 w-auto max-w-40 rounded-xl border border-line object-cover" />
