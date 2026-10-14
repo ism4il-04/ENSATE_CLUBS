@@ -4,6 +4,7 @@
 //   npx tsx scripts/import-organisations.ts <fichier.json>                          → simulation (rien n'est écrit)
 //   npx tsx scripts/import-organisations.ts <fichier.json> --appliquer              → écrit dans la base de .env.local
 //   npx tsx scripts/import-organisations.ts <fichier.json> --env .env.prod.local --appliquer   → base de production
+//   … --creer-seulement   → ajoute les nouvelles organisations sans modifier les existantes (fiches éditées par les clubs)
 //
 // Pour chaque organisation : crée le compte (rôle ORGANISATION, actif à la première connexion Google)
 // et la fiche publique, ou met à jour la fiche si l'organisation existe déjà (même adresse de compte).
@@ -22,6 +23,7 @@ const args = process.argv.slice(2);
 const fichier = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--env");
 const envFile = args.includes("--env") ? args[args.indexOf("--env") + 1] : ".env.local";
 const appliquer = args.includes("--appliquer");
+const creerSeulement = args.includes("--creer-seulement");
 if (!fichier) throw new Error("Indique le fichier JSON à importer.");
 config({ path: envFile, override: true, quiet: true });
 
@@ -76,6 +78,11 @@ async function main() {
     if (orgDuCompte) {
       if (memeNom && memeNom.id !== orgDuCompte.id) {
         console.log(`⚠ ${o.nom} : ce nom est déjà pris par une autre organisation, ignorée`);
+        ignores++;
+        continue;
+      }
+      if (creerSeulement) {
+        console.log(`= ${o.nom} : existe déjà, laissée telle quelle`);
         ignores++;
         continue;
       }
