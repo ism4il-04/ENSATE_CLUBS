@@ -9,7 +9,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
         <Header />
         {children}
         <footer className="flex flex-wrap justify-between gap-3 border-t border-line pt-6 text-[13px] text-muted">
-          <span>ensate/clubs — la vie parascolaire de l&apos;ENSA de Tétouan</span>
+          <span>ENSATE clubs — une plateforme de l&apos;ADE · ENSA de Tétouan</span>
           <nav aria-label="Informations légales" className="flex flex-wrap gap-x-4 gap-y-1">
             <Link href="/mentions-legales" className="hover:text-paper">
               Mentions légales

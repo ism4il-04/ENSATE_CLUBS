@@ -7,10 +7,10 @@ const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: [
 const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "ensate/clubs", template: "%s · ensate/clubs" },
+  title: { default: "ENSATE clubs", template: "%s · ENSATE clubs" },
   description: "Les événements des clubs et associations de l'ENSA de Tétouan : inscriptions, billets et stands.",
-  applicationName: "ensate/clubs",
-  appleWebApp: { capable: true, title: "ensate/clubs", statusBarStyle: "black-translucent" },
+  applicationName: "ENSATE clubs",
+  appleWebApp: { capable: true, title: "ENSATE clubs", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
 };
 

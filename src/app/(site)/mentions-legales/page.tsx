@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Info, LegalPage, Section } from "@/components/site/LegalPage";
 import { LEGAL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Mentions légales", description: "Éditeur, hébergeur et prestataires de la plateforme ensate/clubs." };
+export const metadata: Metadata = { title: "Mentions légales", description: "Éditeur, hébergeur et prestataires de la plateforme ENSATE clubs." };
 
 export default function MentionsLegales() {
   const e = LEGAL.editeur;
@@ -10,7 +10,7 @@ export default function MentionsLegales() {
     <LegalPage titre="Mentions légales" courant="/mentions-legales">
       <Section titre="Éditeur">
         <p>
-          La plateforme <b className="text-paper">ensate/clubs</b> présente les activités parascolaires des clubs et associations de l&apos;École Nationale des Sciences Appliquées de Tétouan.
+          La plateforme <b className="text-paper">ENSATE clubs</b> présente les activités parascolaires des clubs et associations de l&apos;École Nationale des Sciences Appliquées de Tétouan.
         </p>
         <ul className="flex flex-col gap-1">
           <li>

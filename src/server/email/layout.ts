@@ -38,7 +38,7 @@ export function compose(to: string, m: Message): Email {
 <span style="display:none;max-height:0;overflow:hidden">${esc(m.lines[0] ?? "")}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f3ef;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:20px;overflow:hidden">
-<tr><td style="background:#0b0c12;padding:18px 24px;font-size:18px;font-weight:800;color:#f4f3ef">ensate<span style="color:#c6f24e">/</span>clubs</td></tr>
+<tr><td style="background:#0b0c12;padding:16px 24px"><img src="${esc(base)}/brand/logo-fond-sombre.png" alt="ENSATE clubs" width="170" style="display:block;width:170px;height:auto;border:0;color:#f4f3ef;font-size:18px;font-weight:800"></td></tr>
 <tr><td style="height:6px;background:${accent};line-height:6px;font-size:0">&nbsp;</td></tr>
 <tr><td style="padding:26px 24px 8px">
 <h1 style="margin:0 0 14px;font-size:22px;line-height:1.25;color:#0b0c12">${esc(m.title)}</h1>
@@ -58,7 +58,7 @@ ${m.note ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#6b6e
     ...(href ? ["", `${m.cta!.label} : ${href}`] : []),
     ...(m.note ? ["", m.note] : []),
     "",
-    "— ensate/clubs, ENSA de Tétouan (email automatique)",
+    "— ENSATE clubs, une plateforme de l'ADE · ENSA de Tétouan (email automatique)",
   ].join("\n");
 
   return { to, subject: m.subject, html, text };

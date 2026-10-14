@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { Info, LegalPage, Section } from "@/components/site/LegalPage";
 import { LEGAL } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Conditions d'utilisation", description: "Règles d'utilisation de la plateforme ensate/clubs : comptes, inscriptions, billets, paiements et annulations." };
+export const metadata: Metadata = { title: "Conditions d'utilisation", description: "Règles d'utilisation de la plateforme ENSATE clubs : comptes, inscriptions, billets, paiements et annulations." };
 
 export default function Conditions() {
   return (
     <LegalPage titre="Conditions d'utilisation" courant="/conditions">
       <Section titre="Objet">
         <p>
-          <b className="text-paper">ensate/clubs</b> permet de découvrir les événements des clubs et associations de l&apos;ENSA de Tétouan, de s&apos;y inscrire et d&apos;obtenir un billet. Il
+          <b className="text-paper">ENSATE clubs</b> permet de découvrir les événements des clubs et associations de l&apos;ENSA de Tétouan, de s&apos;y inscrire et d&apos;obtenir un billet. Il
           permet aussi aux organisations de demander des dates, de publier leurs événements et de gérer les inscriptions. Utiliser la plateforme implique d&apos;accepter ces conditions.
         </p>
       </Section>

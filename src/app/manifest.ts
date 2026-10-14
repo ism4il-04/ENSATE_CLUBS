@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "ensate/clubs — vie parascolaire de l'ENSA Tétouan",
-    short_name: "ensate/clubs",
+    name: "ENSATE clubs — la vie parascolaire de l'ENSA Tétouan, par l'ADE",
+    short_name: "ENSATE clubs",
     description: "Événements des clubs, inscriptions, billets et stands.",
     lang: "fr",
     start_url: "/?source=pwa",

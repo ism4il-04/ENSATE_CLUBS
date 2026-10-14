@@ -3,6 +3,7 @@
 /* Identité visuelle : fond encre, accent lime, affiches colorées (voir maquettes). */
 @theme {
   --color-ink: #0b0c12;
+  --color-ade: #f08a2c; /* orange de l'ADE (marque ENSATE) */
   --color-surface: #15161f;
   --color-surface-2: #1e2030;
   --color-hover: #1a1c28;

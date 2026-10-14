@@ -1,10 +1,10 @@
-// Service worker ensate/clubs.
+// Service worker ENSATE clubs.
 // - Fichiers statiques (_next/static, icônes, polices) : cache d'abord.
 // - Pages : réseau d'abord, puis page « hors ligne ».
 // - Billets (/moi/billets et /moi/billets/…) : gardés en cache pour être présentés sans réseau.
 //   La page « Mes billets » demande aussi de mettre de côté chaque billet à venir (message « cache-billets »).
 // - À la déconnexion, la page envoie « clear-private » : les billets sont effacés de l'appareil.
-const VERSION = "v3";
+const VERSION = "v4"; // v4 : nouvelles icônes (le cache statique est renouvelé)
 const STATIC = `static-${VERSION}`;
 const PAGES = `pages-${VERSION}`;
 const BILLETS = "billets";

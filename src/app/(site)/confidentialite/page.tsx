@@ -4,7 +4,7 @@ import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
-  description: "Données personnelles traitées par ensate/clubs, finalités, destinataires, durées de conservation et droits (loi 09-08).",
+  description: "Données personnelles traitées par ENSATE clubs, finalités, destinataires, durées de conservation et droits (loi 09-08).",
 };
 
 const Tableau = ({ lignes }: { lignes: [string, string][] }) => (
