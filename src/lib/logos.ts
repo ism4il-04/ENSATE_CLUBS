@@ -12,6 +12,7 @@ const LOGOS_PAR_DEFAUT: Record<string, string> = {
   "infotech-club": "/logos/infotech.png",
   "club-d-echange-culturel": "/logos/cetec.png",
   "ensate-sport": "/logos/sport.png",
+  "association-futurs-ingenieurs": "/logos/afi.png",
 };
 
 export const logoParDefaut = (slug: string): string | null => LOGOS_PAR_DEFAUT[slug] ?? null;
