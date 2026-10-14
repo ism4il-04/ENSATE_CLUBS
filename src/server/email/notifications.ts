@@ -80,7 +80,7 @@ async function coordinateurs() {
   return getDb()
     .select({ email: s.compte.email })
     .from(s.compte)
-    .where(and(eq(s.compte.role, "COORDINATEUR"), eq(s.compte.statut, "ACTIF")));
+    .where(and(inArray(s.compte.role, ["COORDINATEUR", "ADMIN"]), eq(s.compte.statut, "ACTIF")));
 }
 
 /** Inscrits actifs d'un événement et de ses activités. */
@@ -115,6 +115,24 @@ export async function demandeSoumise(eventId: string) {
     ),
     ...partenaires(c, `${club} a soumis la demande au coordinateur des clubs.`),
   ]);
+}
+
+/** Un club demande un changement de date ou de lieu (seul le coordinateur modifie les créneaux, RG-08). */
+export async function changementCreneauxDemande(eventId: string, club: string, auteur: string, message: string) {
+  const c = await eventContext(eventId);
+  if (!c) return;
+  const coords = await coordinateurs();
+  await send(
+    coords.map((r) =>
+      compose(r.email, {
+        subject: `Changement de créneau demandé : ${c.titre}`,
+        title: `${club} demande un changement de date ou de lieu`,
+        lines: [`Pour « ${c.titre} » :`, `« ${message} »`, ...(auteur ? [`Demandé par ${auteur}.`] : [])],
+        details: c.quand.map(([k, v]) => [`Actuel · ${k}`, v] as [string, string]),
+        cta: { label: "Modifier les créneaux", path: `/coord/evenements/${eventId}` },
+      }),
+    ),
+  );
 }
 
 /** Événement créé et validé directement par le coordinateur pour un club. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { AnnulerEvenement } from "@/components/events/AnnulerEvenement";
 import { EventHeader } from "@/components/org/EventHeader";
+import { ChangementCreneaux, InfosEvenement } from "@/components/org/InfosEvenement";
 import { PublicationForm } from "@/components/org/PublicationForm";
 import { AccessError, requireOrgPage } from "@/server/permissions";
 import { countInscritsActifs, getManagedEvent } from "@/server/queries/org";
@@ -34,6 +35,8 @@ export default async function Publication({ params }: PageProps<"/org/evenements
         isPrincipal
         partenaires={m.orgs.filter((o) => o.role === "PARTENAIRE").map((o) => o.nom).join(", ")}
       />
+      <InfosEvenement eventId={evt.id} initial={{ titre: evt.titre, categorie: evt.categorie, descriptionCourte: evt.descriptionCourte ?? "" }} />
+      {evt.structure !== "PROGRAMME" && <ChangementCreneaux eventId={evt.id} />}
       <PublicationForm {...props} />
       {evt.structure !== "SOUS_EVENEMENT" && <AnnulerEvenement eventId={evt.id} titre={evt.titre} inscrits={inscrits} />}
     </>

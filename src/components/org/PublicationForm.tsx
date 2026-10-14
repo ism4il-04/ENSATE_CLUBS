@@ -150,7 +150,7 @@ export function PublicationForm({
             <span className="text-[13px] text-muted">
               {espace === "coord"
                 ? "Créneaux verrouillés ici : modifie-les depuis la fiche de l'événement."
-                : "Créneaux verrouillés après validation. Pour les changer, contacte le coordinateur des clubs."}
+                : "Créneaux verrouillés après validation : pour les changer, utilise « Demander un changement de date ou de lieu » ci-dessus."}
             </span>
           </div>
         </div>

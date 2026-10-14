@@ -6,6 +6,7 @@ import { dateStamp, rangeLabel } from "@/lib/format";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
 import { peut, requireOrgPage } from "@/server/permissions";
 import { listOrgEvents } from "@/server/queries/org";
+import { ReprendreDemande } from "@/components/org/InfosEvenement";
 
 export const metadata: Metadata = { title: "Mes événements" };
 
@@ -99,6 +100,7 @@ export default async function OrgDashboard({ searchParams }: PageProps<"/org">) 
                     {evt.statut === "BROUILLON" ? "Continuer" : "Corriger et resoumettre"}
                   </Link>
                 )}
+                {gerer && evt.statut === "EN_ATTENTE" && role === "PRINCIPAL" && <ReprendreDemande eventId={evt.id} />}
                 {gerer && (evt.statut === "VALIDE" || evt.statut === "PUBLIE") && role === "PRINCIPAL" && (
                   <Link
                     href={`/org/evenements/${evt.id}/publication`}

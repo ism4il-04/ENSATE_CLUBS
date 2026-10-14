@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { InfosEvenement } from "@/components/org/InfosEvenement";
 import { PublicationForm } from "@/components/org/PublicationForm";
 import { Icon } from "@/components/ui/Icon";
 import { STATUT_EVENEMENT } from "@/lib/statuts";
@@ -36,6 +37,7 @@ export default async function CoordPublication({ params }: PageProps<"/coord/eve
         <h1 className="font-display text-[clamp(32px,4vw,46px)] leading-none font-extrabold tracking-[-0.04em]">{evt.titre}</h1>
         <span className="text-sm text-muted">Publication pour {principal?.nom ?? "l'organisation"} : le club voit et peut reprendre ces informations.</span>
       </div>
+      <InfosEvenement eventId={evt.id} initial={{ titre: evt.titre, categorie: evt.categorie, descriptionCourte: evt.descriptionCourte ?? "" }} />
       <PublicationForm {...(await publicationProps(m, "coord"))} />
     </>
   );
