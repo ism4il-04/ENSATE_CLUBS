@@ -50,9 +50,9 @@ export default async function Profil() {
       {personne && <ProfilForm telephone={personne.telephone ?? ""} niveau={personne.niveau ?? ""} organisme={personne.organisme ?? ""} externe={user.role === "EXTERNE"} />}
 
       {user.role !== "ORGANISATION" && equipes.length > 0 && (
-        <Link href="/org" className="press flex items-center justify-between gap-3 rounded-3xl border border-accent/50 bg-accent/8 p-4">
+        <Link href={equipes.length > 1 ? "/espaces" : "/org"} className="press flex items-center justify-between gap-3 rounded-3xl border border-accent/50 bg-accent/8 p-4">
           <span className="flex flex-col">
-            <span className="font-extrabold">Espace club</span>
+            <span className="font-extrabold">{equipes.length > 1 ? "Mes espaces club" : "Espace club"}</span>
             <span className="text-[13px] text-muted">{equipes.map((e) => e.org.nom).join(" · ")}</span>
           </span>
           <span aria-hidden className="text-accent">→</span>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { OrgProfilForm } from "@/components/org/OrgProfilForm";
 import { PageTitle } from "@/components/space/SpaceShell";
+import { logoParDefaut } from "@/lib/logos";
 import { requireOrgPage } from "@/server/permissions";
 import { uploadsEnabled } from "@/server/uploads";
 
@@ -11,7 +12,7 @@ export default async function OrgProfil() {
   return (
     <>
       <PageTitle kicker="Page publique" title="Profil du club" />
-      <OrgProfilForm org={org} uploads={uploadsEnabled()} />
+      <OrgProfilForm org={org} uploads={uploadsEnabled()} logoDefaut={logoParDefaut(org.slug)} />
     </>
   );
 }

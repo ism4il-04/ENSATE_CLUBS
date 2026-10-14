@@ -19,6 +19,12 @@ function config() {
 
 export const uploadsEnabled = () => config() !== null;
 
+/** Image acceptée en base : fichier envoyé sur notre compte Cloudinary (dossiers ensate-clubs/…), aucun autre hôte. */
+export function imageAcceptee(url: string) {
+  const cloud = process.env.CLOUDINARY_CLOUD_NAME;
+  return !!cloud && url.startsWith(`https://res.cloudinary.com/${cloud}/image/upload/`) && url.includes("/ensate-clubs/") && /^[\w\-./:,%]+$/.test(url) && !url.includes("..");
+}
+
 /** Signature Cloudinary : paramètres triés « k=v » joints par « & », suivis du secret, en SHA-1. */
 function sign(params: Record<string, string | number>, apiSecret: string) {
   const toSign = Object.entries(params)

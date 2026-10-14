@@ -8,9 +8,9 @@ export const LEGAL = {
 
   /** Qui publie le site et répond des données (responsable du traitement, loi 09-08). */
   editeur: {
-    nom: "", // ex. « École Nationale des Sciences Appliquées de Tétouan — Université Abdelmalek Essaâdi »
+    nom: "Association Des Étudiants (ADE) de l'ENSA de Tétouan",
     adresse: "", // adresse postale complète
-    email: "", // adresse de contact pour les questions et l'exercice des droits
+    email: "ade.ensa.tetouan@uae.ac.ma", // contact pour les questions et l'exercice des droits
     responsablePublication: "", // nom et fonction
   },
 
@@ -27,7 +27,7 @@ export const LEGAL = {
     { nom: "Neon (Databricks)", role: "Base de données (serveurs en Union européenne, Francfort)", site: "https://neon.tech" },
     { nom: "Google", role: "Connexion avec un compte Google", site: "https://policies.google.com/privacy" },
     { nom: "Cloudinary", role: "Stockage des images (affiches, logos) et des justificatifs de trésorerie (privés)", site: "https://cloudinary.com/privacy" },
-    { nom: "Resend", role: "Envoi des emails de la plateforme", site: "https://resend.com/legal/privacy-policy" },
+    { nom: "Google (Gmail)", role: "Envoi des emails de la plateforme", site: "https://policies.google.com/privacy" },
   ],
 } as const;
 

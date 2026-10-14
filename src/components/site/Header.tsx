@@ -19,8 +19,8 @@ export async function Header() {
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");
-  const membre = user?.id && (user.role === "ETUDIANT" || user.role === "EXTERNE") ? (await mesOrganisations(user.id, user.role)).length > 0 : false;
-  const space = user ? (SPACE[user.role] ?? (membre ? { href: "/org", label: "Espace club" } : undefined)) : undefined;
+  const equipes = user?.id && (user.role === "ETUDIANT" || user.role === "EXTERNE") ? (await mesOrganisations(user.id, user.role)).length : 0;
+  const space = user ? (SPACE[user.role] ?? (equipes > 1 ? { href: "/espaces", label: "Mes espaces" } : equipes ? { href: "/org", label: "Espace club" } : undefined)) : undefined;
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-3.5">

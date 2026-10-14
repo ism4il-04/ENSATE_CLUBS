@@ -10,10 +10,9 @@ const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 
 export default async function Clubs({ searchParams }: PageProps<"/clubs">) {
   const sp = await searchParams;
-  const type = sp.type === "CLUB" || sp.type === "ASSOCIATION" ? sp.type : "";
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
   const all = await listClubs();
-  const list = all.filter((o) => (!type || o.type === type) && (!q || norm(`${o.nom} ${o.description ?? ""}`).includes(norm(q))));
+  const list = all.filter((o) => !q || norm(`${o.nom} ${o.sigle ?? ""} ${o.description ?? ""}`).includes(norm(q)));
 
   return (
     <>
@@ -24,34 +23,13 @@ export default async function Clubs({ searchParams }: PageProps<"/clubs">) {
           </h1>
           <p className="text-[17px] text-muted">Découvre les clubs de l&apos;école et leurs prochains événements.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <nav aria-label="Type d'organisation" className="flex gap-1 rounded-full border border-line bg-surface p-1">
-            {(
-              [
-                ["", "Tous"],
-                ["CLUB", "Clubs"],
-                ["ASSOCIATION", "Associations"],
-              ] as const
-            ).map(([k, label]) => (
-              <Link
-                key={label}
-                href={k ? `/clubs?type=${k}` : "/clubs"}
-                aria-current={type === k ? "page" : undefined}
-                className={`flex h-10 items-center rounded-full px-4 text-sm font-bold ${type === k ? "bg-paper text-ink" : ""}`}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <form action="/clubs" className="flex h-12 w-full max-w-[260px] items-center gap-2 rounded-full border border-line bg-surface px-4 text-muted">
-            <Icon name="search" />
-            <label htmlFor="q" className="sr-only">
-              Rechercher un club
-            </label>
-            <input id="q" name="q" type="search" defaultValue={q} placeholder="Rechercher un club…" className="min-w-0 flex-1 bg-transparent font-medium text-paper outline-none" />
-            {type && <input type="hidden" name="type" value={type} />}
-          </form>
-        </div>
+        <form action="/clubs" className="flex h-12 w-full max-w-[260px] items-center gap-2 rounded-full border border-line bg-surface px-4 text-muted">
+          <Icon name="search" />
+          <label htmlFor="q" className="sr-only">
+            Rechercher un club
+          </label>
+          <input id="q" name="q" type="search" defaultValue={q} placeholder="Rechercher un club…" className="min-w-0 flex-1 bg-transparent font-medium text-paper outline-none" />
+        </form>
       </section>
 
       <div className="grid gap-5 [grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr))]">

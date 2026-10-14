@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/site/Header";
 import { BottomNav } from "@/components/site/NavLinks";
+import { LEGAL } from "@/lib/legal";
 
 export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
@@ -11,6 +12,9 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
         <footer className="flex flex-wrap justify-between gap-3 border-t border-line pt-6 text-[13px] text-muted">
           <span>ENSATE clubs — une plateforme de l&apos;ADE · ENSA de Tétouan</span>
           <nav aria-label="Informations légales" className="flex flex-wrap gap-x-4 gap-y-1">
+            <a href={`mailto:${LEGAL.editeur.email}`} className="hover:text-paper">
+              Contact
+            </a>
             <Link href="/mentions-legales" className="hover:text-paper">
               Mentions légales
             </Link>

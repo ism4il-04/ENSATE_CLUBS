@@ -15,7 +15,7 @@
 | Validation | **Zod** | Mêmes schémas côté formulaire et côté serveur |
 | UI | **Tailwind CSS** + **shadcn/ui** | Composants accessibles, rapide à construire |
 | Images | **Cloudinary** | Affiches et plannings redimensionnés automatiquement ; justificatifs en accès **authentifié** |
-| Emails | **Resend** (ou SMTP de l'école) | Décisions du coordinateur, confirmations d'inscription, notifications aux inscrits |
+| Emails | **SMTP Google (Gmail)**, mot de passe d'application | Décisions du coordinateur, confirmations d'inscription, notifications aux inscrits |
 | QR | `qrcode` (génération), `@zxing/browser` (scan dans le navigateur) | Fonctionne sans application native |
 | Export | `exceljs` | Listes d'inscrits en .xlsx |
 | Hébergement | **Vercel** + **Vercel Cron** | Déploiement à chaque push, environnements de prévisualisation |
@@ -42,7 +42,7 @@ flowchart LR
 
     DB[(PostgreSQL<br/>Neon)]
     IMG[Cloudinary<br/>public + authentifié]
-    MAIL[Resend<br/>emails]
+    MAIL[Gmail SMTP<br/>emails]
     GOOG[Google<br/>OAuth]
 
     E & O & C --> UI --> API --> SVC
@@ -214,7 +214,7 @@ Le même verrou s'applique aux inscriptions gratuites, à la promotion depuis la
 | Production | Neon `main` | Utilisateurs réels |
 
 - **Intégration continue (GitHub Actions)** : lint → vérification des types → tests unitaires et d'intégration → build. Les tests e2e tournent sur la preview.
-- **Secrets** dans les variables d'environnement Vercel : `DATABASE_URL`, `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CLOUDINARY_*`, `RESEND_API_KEY`. Jamais dans le code.
+- **Secrets** dans les variables d'environnement Vercel : `DATABASE_URL`, `AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CLOUDINARY_*`, `SMTP_USER`, `SMTP_PASS`. Jamais dans le code.
 - **Sauvegardes** : restauration Neon à un instant donné, plus un export `pg_dump` hebdomadaire.
 
 ## 9. Sécurité (résumé)

@@ -3,6 +3,7 @@ import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { schema as s } from "@/server/db";
 import { withTx } from "@/server/db/tx";
+import { imageAcceptee } from "@/server/uploads";
 
 export const PublicationSchema = z.object({
   description: z.string().trim().max(5000).default(""),
@@ -10,10 +11,9 @@ export const PublicationSchema = z.object({
     .string()
     .trim()
     .max(500)
-    .refine((v) => v === "" || /^https:\/\/\S+$/.test(v), "L'adresse de l'affiche doit commencer par https://")
     .default(""),
   plannings: z
-    .array(z.string().trim().max(500).regex(/^https:\/\/\S+$/, "Chaque photo du planning doit être un lien https://"))
+    .array(z.string().trim().max(500))
     .max(6, "6 photos de planning au maximum.")
     .default([]),
   capacite: z.number().int().positive().nullable(),
@@ -52,6 +52,13 @@ export async function savePublication(eventId: string, input: PublicationInput, 
     if (evt.statut !== "VALIDE" && evt.statut !== "PUBLIE") throw new PublicationError(["L'événement doit être validé par le coordinateur avant d'être publié."]);
     const isProgramme = evt.structure === "PROGRAMME";
     const errs: string[] = [];
+
+    // Images : uniquement des fichiers envoyés sur la plateforme (une image déjà enregistrée reste acceptée).
+    const planningActuel = new Set(
+      (await tx.select({ url: s.media.url }).from(s.media).where(and(eq(s.media.idEvenement, eventId), eq(s.media.type, "PLANNING")))).map((m) => m.url),
+    );
+    if (d.afficheUrl && d.afficheUrl !== evt.afficheUrl && !imageAcceptee(d.afficheUrl)) errs.push("L'affiche doit être envoyée depuis la plateforme.");
+    if (d.plannings.some((u) => !planningActuel.has(u) && !imageAcceptee(u))) errs.push("Les photos du planning doivent être envoyées depuis la plateforme.");
 
     if (!isProgramme) {
       const [{ publics, membres }] = await tx

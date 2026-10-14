@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { membreAjoute, notify } from "@/server/email/notifications";
 import { AccessError, getSessionUser, mesOrganisations, ORG_COOKIE, requireOrganisation } from "@/server/permissions";
 import { chercherEtudiants } from "@/server/services/caisse";
@@ -12,11 +13,18 @@ export type MembreResult = { ok: boolean; message: string };
 /** Club actif d'une personne membre de plusieurs organisations. Refusé si elle n'en fait pas partie. */
 export async function choisirOrganisationAction(orgId: string) {
   const user = await getSessionUser();
-  if (!user) return;
+  if (!user) return false;
   const list = await mesOrganisations(user.id, user.role);
-  if (!list.some((x) => x.org.id === orgId)) return;
+  if (!list.some((x) => x.org.id === orgId)) return false;
   (await cookies()).set(ORG_COOKIE, orgId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 180 });
   revalidatePath("/org", "layout");
+  return true;
+}
+
+/** Écran « Mes espaces » : entre dans l'espace choisi puis revient à la page demandée (dans /org uniquement). */
+export async function entrerEspaceAction(orgId: string, retour: string) {
+  if (!(await choisirOrganisationAction(orgId))) redirect("/espaces");
+  redirect(/^\/org(?:[/?#]|$)/.test(retour) ? retour : "/org");
 }
 
 async function wrap(fn: () => Promise<string>): Promise<MembreResult> {

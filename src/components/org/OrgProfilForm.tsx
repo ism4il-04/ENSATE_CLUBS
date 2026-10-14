@@ -22,7 +22,7 @@ type Org = {
   logoUrl: string | null;
 };
 
-export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) {
+export function OrgProfilForm({ org, uploads, logoDefaut }: { org: Org; uploads: boolean; logoDefaut: string | null }) {
   const [state, action, pending] = useActionState<OrgProfilState, FormData>(updateOrgProfil, null);
   const [couleur, setCouleur] = useState(org.couleur);
   const [sigle, setSigle] = useState(org.sigle ?? "");
@@ -54,7 +54,7 @@ export function OrgProfilForm({ org, uploads }: { org: Org; uploads: boolean }) 
               ))}
             </div>
           </fieldset>
-          <ImageUpload folder="ensate-clubs/logos" enabled={uploads} value={logo} onChange={setLogo} name="logoUrl" label="Logo" hint="Image carrée de préférence." />
+          <ImageUpload folder="ensate-clubs/logos" enabled={uploads} value={logo} onChange={setLogo} defaut={logoDefaut} name="logoUrl" label="Logo" hint="Image carrée de préférence, de préférence sans fond." />
         </section>
         <section className="flex flex-col gap-3.5 rounded-3xl border border-line bg-surface p-5">
           <h2 className="text-[17px] font-extrabold">

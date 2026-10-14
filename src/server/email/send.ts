@@ -1,9 +1,7 @@
 import "server-only";
+import nodemailer from "nodemailer";
 
 export type Email = { to: string; subject: string; html: string; text: string };
-
-const RESEND = "https://api.resend.com/emails/batch";
-const BATCH = 100; // maximum par appel Resend
 
 /** Adresse publique du site, pour les liens dans les emails. */
 export function appUrl() {
@@ -14,31 +12,46 @@ export function appUrl() {
 
 const mask = (email: string) => email.replace(/^(.).*(@.*)$/, "$1…$2");
 
+/** SMTP de Google (Gmail) : compte d'envoi + mot de passe d'application (validation en deux étapes requise). */
+function transport() {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) return null;
+  const port = Number(process.env.SMTP_PORT) || 465;
+  return {
+    // Gmail impose l'adresse du compte (ou un alias vérifié) comme expéditeur.
+    from: process.env.EMAIL_FROM || `"ENSATE clubs" <${user}>`,
+    mailer: nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port,
+      secure: port === 465, // 465 : TLS direct ; 587 : STARTTLS imposé ci-dessous
+      requireTLS: true,
+      auth: { user, pass },
+      pool: true,
+      maxConnections: 3,
+    }),
+  };
+}
+
 /**
  * Envoie des emails transactionnels (un destinataire par email : personne ne voit l'adresse des autres).
  * Ne lève jamais d'erreur : un email en échec ne doit pas annuler l'action qui l'a déclenché.
- * Sans RESEND_API_KEY, les emails sont seulement journalisés (développement).
+ * Sans SMTP_USER / SMTP_PASS, les emails sont seulement journalisés (développement).
  */
 export async function sendEmails(emails: Email[]) {
   const list = emails.filter((e) => e.to.includes("@"));
   if (!list.length) return;
-  const key = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!key || !from) {
-    for (const e of list) console.info(`[email non envoyé : RESEND_API_KEY absent] ${mask(e.to)} · ${e.subject}`);
+  const t = transport();
+  if (!t) {
+    for (const e of list) console.info(`[email non envoyé : SMTP non configuré] ${mask(e.to)} · ${e.subject}`);
     return;
   }
-  for (let i = 0; i < list.length; i += BATCH) {
-    const chunk = list.slice(i, i + BATCH);
-    try {
-      const res = await fetch(RESEND, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify(chunk.map((e) => ({ from, to: [e.to], subject: e.subject, html: e.html, text: e.text }))),
-      });
-      if (!res.ok) console.error(`[email] Resend a refusé ${chunk.length} email(s) : ${res.status} ${(await res.text()).slice(0, 300)}`);
-    } catch (err) {
-      console.error(`[email] envoi impossible (${chunk.length} email(s))`, err);
-    }
+  try {
+    const res = await Promise.allSettled(list.map((e) => t.mailer.sendMail({ from: t.from, to: e.to, subject: e.subject, html: e.html, text: e.text })));
+    res.forEach((r, i) => {
+      if (r.status === "rejected") console.error(`[email] échec pour ${mask(list[i]!.to)} : ${r.reason instanceof Error ? r.reason.message : r.reason}`);
+    });
+  } finally {
+    t.mailer.close();
   }
 }

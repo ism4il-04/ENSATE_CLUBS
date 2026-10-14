@@ -27,11 +27,11 @@ Dans [Google Cloud Console](https://console.cloud.google.com/) → *API et servi
 
 ### 3. Images (facultatif)
 
-Crée un compte gratuit sur [cloudinary.com](https://cloudinary.com) et copie *Cloud name*, *API Key* et *API Secret* dans `.env.local` (`CLOUDINARY_*`). Les clubs peuvent alors envoyer affiche, photos du planning et logo depuis leur téléphone ou leur PC ; les images sont redimensionnées et converties automatiquement. Sans ces valeurs, ils collent un lien https vers l'image.
+Crée un compte gratuit sur [cloudinary.com](https://cloudinary.com) et copie *Cloud name*, *API Key* et *API Secret* dans `.env.local` (`CLOUDINARY_*`). Les clubs peuvent alors envoyer affiche, photos du planning et logo depuis leur téléphone ou leur PC ; les images sont redimensionnées et converties automatiquement. Les images ne s'ajoutent que par envoi de fichier : le serveur refuse tout lien qui ne pointe pas vers ce compte Cloudinary. Les clubs importés gardent leur logo par défaut (`public/logos`, table `src/lib/logos.ts`) tant qu'ils n'en envoient pas un autre. Sans ces valeurs, l'envoi d'images est désactivé. Vérification : `node scripts/verifier-cloudinary.mjs`.
 
 ### 4. Emails (facultatif en local)
 
-Crée un compte sur [resend.com](https://resend.com), vérifie le domaine d'envoi, puis renseigne `RESEND_API_KEY` et `EMAIL_FROM` dans `.env.local`. Sans clé, chaque email est seulement affiché dans le terminal de `npm run dev` (destinataire masqué et sujet).
+Les emails partent par le SMTP de Google (Gmail). Sur le compte d'envoi, active la validation en deux étapes, crée un **mot de passe d'application** (myaccount.google.com → Sécurité → Mots de passe des applications), puis renseigne `SMTP_USER` (l'adresse du compte) et `SMTP_PASS` (les 16 caractères, sans espaces) dans `.env.local`. `EMAIL_FROM` est facultatif : Gmail impose l'adresse du compte ou un alias vérifié. Limite de Gmail : environ 500 destinataires par jour pour un compte gratuit (2 000 avec Google Workspace). Sans ces valeurs, chaque email est seulement affiché dans le terminal de `npm run dev` (destinataire masqué et sujet).
 
 Emails envoyés :
 - **demande soumise** : au coordinateur ;
@@ -83,7 +83,7 @@ Pour tester sans Google, ajoute `AUTH_DEV_LOGIN=1` dans `.env.local` puis lance 
    | `AUTH_SECRET` | nouveau secret, différent de celui de développement : `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`, à coller directement dans Vercel |
    | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | client OAuth Google |
    | `CRON_SECRET` | nouveau secret aléatoire (la tâche planifiée l'envoie automatiquement) |
-   | `RESEND_API_KEY`, `EMAIL_FROM` | emails (domaine vérifié chez Resend) |
+   | `SMTP_USER`, `SMTP_PASS` (et `EMAIL_FROM` facultatif) | emails par Gmail : adresse du compte et mot de passe d'application |
    | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | envoi d'images (facultatif) |
    | `APP_URL` | adresse publique, ex. `https://clubs.ensate.ma` (sinon l'adresse Vercel de production) |
 
@@ -133,9 +133,11 @@ Pour la PWA, le scan au stand ou une future application : événements publics, 
 | Coordinateur (`/coord`) | Demandes et décisions · créer pour un club · compléter et publier à la place d'un club · calendrier · tous les événements · modification des créneaux · annulation · organisations (création, modification, désactivation) · lieux · périodes bloquées · statistiques (sans montants) |
 | Admin (`/admin`) | Comptes : création (toute adresse Google), suspension |
 
-Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG).
+Images : envoi direct vers Cloudinary (affiche, planning, logo), signé par `/api/upload` (dossiers et formats imposés, pas de SVG). Côté serveur, seules les adresses de ce compte Cloudinary (dossiers `ensate-clubs/`) et le logo par défaut du club sont acceptées.
 
-Emails : `src/server/email` (gabarits HTML + texte, envoi groupé via Resend). Annulation d'un événement par le club principal ou le coordinateur : billets invalidés, stand fermé, inscrits prévenus.
+Plusieurs clubs : une personne membre de plusieurs organisations choisit son espace sur `/espaces` (cookie `org_active`, revérifié à chaque requête contre ses appartenances actives). Sans choix valide, les pages de `/org` renvoient vers `/espaces` et les actions sont refusées : rien ne s'exécute jamais sur un club choisi par défaut.
+
+Emails : `src/server/email` (gabarits HTML + texte, envoi par le SMTP de Gmail, un email par destinataire). Annulation d'un événement par le club principal ou le coordinateur : billets invalidés, stand fermé, inscrits prévenus.
 
 Trésorerie (`/org/tresorerie`) : réservée au compte de l'organisation par `requireFinance()` ; coordinateur et admin reçoivent 403. Les justificatifs sont envoyés en Cloudinary `authenticated` et ouverts par un lien de téléchargement signé valable 5 minutes.
 

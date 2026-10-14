@@ -8,7 +8,6 @@ type Folder = "ensate-clubs/affiches" | "ensate-clubs/plannings" | "ensate-clubs
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
 const MAX_BYTES = 10 * 1024 * 1024; // limite du plan gratuit Cloudinary
-const field = "h-11 min-w-0 rounded-[14px] border-[1.5px] border-line-strong bg-ink px-3.5 text-sm font-semibold text-paper outline-none focus:border-accent";
 
 const ERREURS: Record<string, string> = {
   NON_AUTHENTIFIE: "Session expirée : reconnecte-toi.",
@@ -80,6 +79,7 @@ export function ImageUpload({
   enabled,
   value,
   onChange,
+  defaut,
   name,
   label,
   hint,
@@ -88,12 +88,13 @@ export function ImageUpload({
   enabled: boolean;
   value: string;
   onChange: (url: string) => void;
+  /** Image proposée par la plateforme (logo par défaut) : « Retirer » y ramène. */
+  defaut?: string | null;
   name?: string;
   label: string;
   hint?: string;
 }) {
   const { busy, error, ref, run } = useUploader(folder);
-  const [link, setLink] = useState(!enabled);
 
   return (
     <div className="flex flex-col gap-2 text-[13px] font-bold text-muted">
@@ -101,7 +102,7 @@ export function ImageUpload({
       {name && <input type="hidden" name={name} value={value} />}
       <div className="flex flex-wrap items-center gap-3">
         {/^(https:\/\/|\/logos\/)/.test(value) ? (
-          // Aperçu dans l'espace club : simple <img>, l'image peut venir de n'importe quel hôte https.
+          // Aperçu : image envoyée sur Cloudinary ou logo par défaut du site (/logos/…).
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imageUrl(value, 240)} alt="" className="h-20 w-auto max-w-40 rounded-xl border border-line object-cover" />
         ) : (
@@ -115,19 +116,13 @@ export function ImageUpload({
             <PickButton label={value ? "Remplacer" : "Choisir une image"} busy={busy} onClick={() => ref.current?.click()} />
           </>
         )}
-        {value && !busy && (
-          <button type="button" onClick={() => onChange("")} className="press flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-muted hover:text-danger">
-            <Icon name="trash" stroke={2.2} /> Retirer
+        {!enabled && <span className="font-medium text-faint">L&apos;envoi d&apos;images n&apos;est pas encore activé sur la plateforme.</span>}
+        {value && !busy && value !== defaut && (
+          <button type="button" onClick={() => onChange(defaut ?? "")} className="press flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-muted hover:text-danger">
+            <Icon name="trash" stroke={2.2} /> {defaut ? "Revenir au logo par défaut" : "Retirer"}
           </button>
         )}
       </div>
-      {link ? (
-        <input value={value} onChange={(e) => onChange(e.target.value.trim())} placeholder="https://… (lien vers l'image)" aria-label={`${label} : lien`} className={field} />
-      ) : (
-        <button type="button" onClick={() => setLink(true)} className="self-start text-[13px] font-bold text-faint underline underline-offset-2">
-          ou coller un lien
-        </button>
-      )}
       {error && (
         <span role="alert" className="text-danger">
           {error}
@@ -156,17 +151,8 @@ export function ImageListUpload({
   label: string;
   hint?: string;
 }) {
-  const { busy, error, setError, ref, run } = useUploader(folder);
-  const [link, setLink] = useState("");
+  const { busy, error, ref, run } = useUploader(folder);
   const room = max - value.length;
-
-  function addLink() {
-    const u = link.trim();
-    if (!/^https:\/\/\S+$/.test(u)) return setError("Le lien doit commencer par https://");
-    setError(null);
-    onChange([...value, u].slice(0, max));
-    setLink("");
-  }
 
   return (
     <div className="flex flex-col gap-2 text-[13px] font-bold text-muted">
@@ -206,24 +192,7 @@ export function ImageListUpload({
               <PickButton label="Ajouter des photos" busy={busy} onClick={() => ref.current?.click()} />
             </>
           )}
-          <div className="flex min-w-60 flex-1 gap-2">
-            <input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addLink();
-                }
-              }}
-              placeholder={enabled ? "ou coller un lien https://…" : "https://… (lien vers l'image)"}
-              aria-label={`${label} : ajouter un lien`}
-              className={`${field} flex-1`}
-            />
-            <button type="button" onClick={addLink} disabled={!link.trim()} className="press h-11 rounded-full border-[1.5px] border-line-strong px-4 text-sm font-extrabold text-paper disabled:opacity-50">
-              Ajouter
-            </button>
-          </div>
+        {!enabled && <span className="font-medium text-faint">L&apos;envoi d&apos;images n&apos;est pas encore activé sur la plateforme.</span>}
         </div>
       )}
       {error && (

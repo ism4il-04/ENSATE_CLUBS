@@ -88,8 +88,10 @@ async function organisationActive(cap: Capacite) {
   if (user.role === "COORDINATEUR" || user.role === "ADMIN") return { error: "ACCES_REFUSE" as const };
   const list = await mesOrganisations(user.id, user.role);
   if (!list.length) return { error: "ACCES_REFUSE" as const };
+  // Plusieurs organisations : l'espace doit avoir été choisi (cookie revérifié contre les appartenances actuelles).
   const wanted = (await cookies()).get(ORG_COOKIE)?.value;
-  const choisie = list.find((x) => x.org.id === wanted) ?? list[0];
+  const choisie = list.find((x) => x.org.id === wanted) ?? (list.length === 1 ? list[0] : null);
+  if (!choisie) return { error: "CHOIX" as const };
   if (!peut(choisie.acces, cap)) return { error: "CAPACITE" as const, acces: choisie.acces };
   return { user, org: choisie.org, acces: choisie.acces, autres: list.length - 1 };
 }
@@ -101,11 +103,12 @@ export async function requireOrganisation(cap: Capacite) {
   return r;
 }
 
-/** Page : comme requireOrganisation, mais redirige (connexion, accueil du club, ou accueil du site). */
+/** Page : comme requireOrganisation, mais redirige (connexion, choix de l'espace, accueil du club, ou accueil du site). */
 export async function requireOrgPage(cap: Capacite, retour: string) {
   const r = await organisationActive(cap);
   if ("error" in r) {
     if (r.error === "NON_AUTHENTIFIE") redirect(`/connexion?retour=${encodeURIComponent(retour)}`);
+    if (r.error === "CHOIX") redirect(`/espaces?retour=${encodeURIComponent(retour)}`);
     redirect(r.error === "CAPACITE" ? "/org" : "/");
   }
   return r;
